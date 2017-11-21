@@ -16,22 +16,24 @@
     "express": "~4.14.1",
     "express-session": "1.15.1",
     "formidable": "1.1.1",
+    "grunt": "^1.0.1",
+    "grunt-contrib-uglify": "^3.1.0",
     "hprose": "2.0.44",
     "log4js": "1.1.1",
     "moment": "2.18.1",
     "morgan": "~1.7.0",
     "mysql": "2.13.0",
+    "mysql2": "latest",
     "node-schedule": "^1.2.5",
     "node-xlsx": "0.7.4",
     "querystring": "0.2.0",
     "redis": "2.8.0",
     "request": "2.79.0",
+    "sequelize": "latest",
     "serve-favicon": "~2.3.2",
     "ssh2": "0.4.15",
     "through": "2.3.8",
     "underscore": "1.8.3",
-    "zip-local": "0.3.4",
-    "sequelize": "latest",
-    "mysql2": "latest"
+    "zip-local": "0.3.4"
   }
 }
