@@ -73,7 +73,6 @@ module.exports = function (param, routeDir) {
         switch (action) {
             case "list": {
                 var env_name = form_fields["env_name"];
-                var search_condition = form_fields["search_condition"];
                 var user_id = req.session.user["user_id"] || 0;
                 if (!_.has(form_fields, "env_name")) {
                     res.end(JSON.stringify({"status": "error", "msg": "参数缺失"}));
