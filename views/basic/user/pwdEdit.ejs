@@ -1,0 +1,51 @@
+<div class="container-fluid">
+    <form class="form-horizontal" role="form">
+        <div class="form-group">
+            <label class="control-label col-sm-2">原密码</label>
+
+            <div class="col-sm-9">
+                <input name="old_pwd" type="text" class="form-control" placeholder="原密码">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">新密码</label>
+
+            <div class="col-sm-9">
+                <input name="new_pwd" type="text" class="form-control" placeholder="新密码">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group pull-right">
+            <button id="pwd_edit_submit" class="btn btn-primary" data-dismiss="modal">提交</button>
+            <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+        </div>
+    </form>
+</div>
+<script>
+    $("#pwd_edit_submit").on("click", function () {
+        var url = "/basic/user/pwdEdit";
+        var form_data = new FormData($("form")[0]);
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.msg);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+            }
+        });
+    });
+</script>

@@ -1,0 +1,69 @@
+<div class="row">
+    <div class="col-sm-12">
+        <label class="col-sm-4 control-label">解绑手机号(修改记录存入日志)</label>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <form id="form_mobile" class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">手机号</label>
+                <div class="col-sm-2">
+                    <input name="bind_mobile" type="text" class="form-control"
+                           placeholder="清除手机号">
+                </div>
+                <span class="star">*</span>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">手机号登录密码</label>
+                <div class="col-sm-2">
+                    <input name="mobile_pwd" type="text" class="form-control" placeholder="手机号登录密码">
+                </div>
+                <span class="star">*</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-offset-2 col-sm-2">
+                    <input id="btn_mobile" type="button" data-value="1" class="btn btn-default" value="执行解绑"/>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row">
+    提示：恵管家后台具有密码解绑功能
+</div>
+<script>
+    $(function () {
+        //------------------获取页面元素--------------------------------
+        var $env_name = $("#env_name");//环境选择
+        var $func_type = $("#func_type");//功能选择
+        var $form_mobile = $("#form_mobile");//解绑表单
+        //提交按钮
+        var $btn_mobile = $("#btn_mobile");//执行解绑
+        //公共变量
+        var env_name = $env_name.find("li.active a").data("value");
+        var func_type = $func_type.find("option:selected").val();
+        //----------------------END-------------------------------------
+        $btn_mobile.click(function () {
+            var form_data = new FormData($form_mobile[0])
+            var exec_type = $(this).data("value");
+            form_data.append("env_name", env_name);
+            form_data.append("func_type", func_type);
+            form_data.append("exec_type", exec_type);
+            form_data = form_data.ConvertToJson();
+            var url = "/tomcat/tenantSet/operatorTenantSet";
+            $.get(url, form_data, function (data, status) {
+                if (status === "success") {
+                    var _obj = JSON.parse(data);
+                    if (_obj.status === "success") {
+                        toastr.info(_obj.data);
+                    } else {
+                        toastr.warning(_obj.msg);
+                    }
+                } else {
+                    toastr.error('内部服务器错误');
+                }
+            });
+        });
+    });
+</script>

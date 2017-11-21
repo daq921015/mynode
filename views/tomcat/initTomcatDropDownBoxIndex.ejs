@@ -1,0 +1,41 @@
+//-----------------初始化下拉控件、监控下拉框变化---------------
+var tomcats =<%- JSON.stringify(typeof tomcats === "undefined" ? {} : tomcats) %>;
+var from_data =<%- JSON.stringify(typeof from_data === "undefined" ? {} : from_data) %>;
+for (var env_name in tomcats) {
+$env_name.append('<option value="' + env_name + '">' + env_name + '</option>');
+}
+var init_env = _.has(from_data, "env_name") ? from_data["env_name"] : _.first(_.keys(tomcats));
+$env_name.find("option[value='" + init_env + "']").attr("selected", true);
+for (var group_name in tomcats[init_env]) {
+$group_name.append('<option value="' + group_name + '">' + group_name + '</option>');
+}
+var init_group = _.has(from_data, "group_name") ? from_data["group_name"] : _.first(_.keys(tomcats[init_env]));
+$group_name.find("option[value='" + init_group + "']").attr("selected", true);
+if (_.has(tomcats[init_env], init_group)) {
+_.each(tomcats[init_env][init_group], function (program_name) {
+$program_name.append('<option value="' + program_name + '">' + program_name + '</option>');
+});
+var init_program = _.has(from_data, "program_name") ? from_data["program_name"] : _.first(tomcats[init_env][init_group]);
+$program_name.find("option[value='" + init_program + "']").attr("selected", true);
+}
+$env_name.change(function () {
+var env_name = $env_name.find("option:selected").val();
+$group_name.empty();
+$group_name.append('<option value="">全部</option>');
+for (var group_name in tomcats[env_name]) {
+$group_name.append('<option value="' + group_name + '">' + group_name + '</option>');
+}
+$group_name.change();
+});
+$group_name.change(function () {
+var env_name = $env_name.find("option:selected").val();
+var group_name = $group_name.find("option:selected").val();
+$program_name.empty();
+$program_name.append('<option value="">全部</option>');
+if (_.has(tomcats[env_name], group_name)) {
+_.each(tomcats[env_name][group_name], function (program_name) {
+$program_name.append('<option value="' + program_name + '">' + program_name + '</option>');
+});
+}
+$program_name.change();
+});

@@ -1,0 +1,228 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <ul id="search_env" class="nav nav-tabs">
+                <% for (var i = 0, j = envs.length;i < j;i++){ %>
+                <li><a href="#" data-value="<%= envs[i] %>" data-toggle="tab"><%= envs[i] %></a>
+                </li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <form id="form_dashboard" class="form-inline" role="form">
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="分组/程序">
+                    <input type="text" style="display: none">
+                    <input id="btn_dashboard" type="button" class="btn btn-default" value="搜索">
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_dashboard"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $search_env = $("#search_env");//环境
+        var $form_dashboard = $("#form_dashboard");//表单
+        var $btn_dashboard = $("#btn_dashboard");//搜索
+        var $tb_dashboard = $("#tb_dashboard");//表格
+        //环境选项卡
+        var $tabs = $search_env.find("a");
+        var env_name = $search_env.find("li.active a").data("value");
+        //----------------------END-------------------------------------
+        //--------------------注册事件----------------------------------
+        //选项卡更换,绑定点击事件
+        $tabs.on("click", function (e) {
+            var $this = $(this);
+            $tabs.css("background-color", "");
+            $this.css("background-color", "#99FFFF");
+            env_name = $(this).data("value");
+            $btn_dashboard.click();
+        });
+        //默认选中第一个
+        if (typeof $tabs[0]) {
+            $tabs[0].click();
+        }
+        //----------------------END-------------------------------------
+        //----------------------表格------------------------------------
+        var mytable = new MyTable($tb_dashboard, $btn_dashboard, $form_dashboard);
+        mytable.bootStrap.url = "/tomcat/tomcatDashboard/list";
+        mytable.bootStrap.columns = [{
+            checkbox: true
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'group_name',
+            title: '分组'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'program_name',
+            title: '程序'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'alias',
+            title: '程序别名'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'run_status',
+            title: '运行状态',
+            formatter: function (value, row, index) {
+                return getRunstatus(value);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'last_deploy',
+            title: '最后一次部署',
+            formatter: function (value, row, index) {
+                var _re = "无部署历史";
+                var _obj = _.pick(row, "apptype", "appversion", "user_name", "deploy_time", "deploy_result");
+                if (_.size(_obj) === 5) {
+                    _re = _obj["apptype"] + "|" + _obj["appversion"] + "|" + _obj["user_name"] + "|"
+                        + moment(_obj["deploy_time"]).utcOffset(8).format("YYYY-MM-DD HH:mm:ss") + "|" + _obj["deploy_result"]
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: '',
+            title: '操作',
+            events: {
+                "click input[name='operator']": function (e, value, row, index) {
+                    var url_param = $.param(_.pick(row, ["env_name", "group_name", "program_name", "app_server_id"]));
+                    var operator = $(this).data("operator");
+                    if (_.has(skip_url, operator)) {
+                        window.open(skip_url[operator] + "&" + url_param);
+                        return;
+                    }
+                    if (_.has(ajax_url, operator)) {
+                        var $that = $(this);
+                        var url = ajax_url[operator];
+                        closeButton($that)
+                        $.get(url, url_param, function (data, status) {
+                            openButton($that)
+                            if (status === "success") {
+                                var obj = $.parseJSON(data);
+                                if (obj.status === "success") {
+                                    toastr.info(obj.data);
+                                    getTomcatStatus(url_param, function (err, data) {
+                                        $tb_dashboard.bootstrapTable('updateCell', {
+                                            index: index,
+                                            field: 'run_status',
+                                            value: data
+                                        })
+                                    });
+                                } else {
+                                    toastr.warning(obj.msg);
+                                }
+                            } else {
+                                toastr.err("内部服务器错误");
+                            }
+                        });
+                    }
+                }
+            },
+            formatter: function (value, row, index) {
+                var _re = "", privilege_code = [];
+                if (_.has(row, "privilege_code")) {
+                    privilege_code = row["privilege_code"].split(",");
+                }
+                var btn_obj = {
+                    "1": '<input name="operator" type="button" class="btn btn-default" data-operator="getDeployTomcat" value="程序部署">',
+                    "2": '<input name="operator" type="button" class="btn btn-default" data-operator="startTomcat" value="启动">',
+                    "3": '<input name="operator" type="button" class="btn btn-default" data-operator="stopTomcat" value="停止">',
+                    "4": '<input name="operator" type="button" class="btn btn-default" data-operator="reStartTomcat" value="重启">',
+                    "5": '<input name="operator" type="button" class="btn btn-default" data-operator="getTomcatLog" value="控制台日志">',
+                    "6": '',
+                    "7": '<input name="operator" type="button" class="btn btn-default" data-operator="getDeployAppHistory" value="部署历史">',
+                    "8": '<input name="operator" type="button" class="btn btn-default" data-operator="getDeployAppConf" value="程序配置">',
+                    "9": '<input name="operator" type="button" class="btn btn-default" data-operator="getDeployAppServer" value="部署服务器">'
+                }
+                _re = _.chain(btn_obj).pick(privilege_code).values().join('');
+                return _re;
+            }
+        }];
+        var skip_url = {
+            "getDeployTomcat": "/tomcat/deployTomcat/getDeployTomcat?sider_id=75",
+            "getDeployAppHistory": "/tomcat/deployAppHistory/getDeployAppHistory?sider_id=80",
+            "getDeployAppConf": "/tomcat/deployAppConf/getDeployAppConf?sider_id=43",
+            "getDeployAppServer": "/tomcat/deployAppServer/getDeployAppServer?sider_id=51",
+            "getTomcatLog": "/tomcat/tomcatDashboard/getTomcatLog?sider_id=40"
+        };
+        var ajax_url = {
+            "startTomcat": "/tomcat/tomcatDashboard/startTomcat?sider_id=40",
+            "stopTomcat": "/tomcat/tomcatDashboard/stopTomcat?sider_id=40",
+            "reStartTomcat": "/tomcat/tomcatDashboard/reStartTomcat?sider_id=40"
+        };
+        //获取运行状态
+        var getTomcatStatus = function (data, callback) {
+            var url = "/tomcat/tomcatDashboard/getTomcatStatus?sider_id=40"
+            $.get(url, data || {}, function (data, status) {
+                var _re = "";
+                if (status === "success") {
+                    var obj = $.parseJSON(data);
+                    if (obj.status === "success") {
+                        _re = obj.data;
+                    } else {
+                        _re = obj.msg;
+                    }
+                } else {
+                    _re = "内部服务器错误";
+                }
+                callback(null, _re);
+            });
+        }
+        var getRunstatus = function (value) {
+            var run = new RegExp("running", "i")
+            var stop = new RegExp("stop", "i")
+            if (run.test(value)) {
+                return '<span style="color: #00A000">运行中</span>'
+            } else if (stop.test(value)) {
+                return '<span style="color: red">已停止</span>';
+            } else {
+                return '<span style="color: #FFBB00 ">未部署</span>';
+            }
+        };
+        //其它表格查询条件
+        mytable.currentFormData = function () {
+            return {
+                env_name: env_name
+            }
+        };
+        $tb_dashboard.bootstrapTable(mytable.getBootStrap());
+        //----------------------END-------------------------------------
+        //绑定查询按钮
+        $btn_dashboard.click(function () {
+            $tb_dashboard.bootstrapTable("refresh");
+        });
+    });
+</script>
+<%- include('../../footer.ejs') %>
+

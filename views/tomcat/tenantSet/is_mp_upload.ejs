@@ -1,0 +1,94 @@
+<div class="row">
+    <div class="col-sm-12">
+        <label>上传MP_xxx.txt文件(上传记录存入日志)</label>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <form id="up_mp_form" class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">微餐厅配置文件上传</label>
+
+                <div class="col-sm-6">
+                    <input id="up_mp_file" type="file" class="input" name="up_mp_file"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-6 col-sm-offset-2">
+                    <input id="mp_file_upload" type="button" class="btn btn-default" value="开始上传">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row" style="margin-top: 50px">
+    <div class="col-sm-12">
+        <div>
+            方象微餐厅访问地址：
+        </div>
+        <div>
+            1、www_ali za1区微餐厅访问地址：http://www.smartpos.top/ct
+        </div>
+        <div>
+            2、www_ali zd1区微餐厅访问地址：http://www.smartpos.top/zd1/ct
+        </div>
+        <div>
+            奥家微餐厅访问地址：
+        </div>
+        <div>
+            1、sanmi_www zd1区微餐厅访问地址：http://www.sanmipos.com/zd1/ct
+        </div>
+    </div>
+</div>
+<script>
+    //------------------获取页面元素--------------------------------
+    var $env_name = $("#env_name");//环境选择
+    var $func_type = $("#func_type");//功能选择
+    var $mp_file_upload = $("#mp_file_upload");
+    var $up_mp_form = $("#up_mp_form");
+    var $up_mp_file = $("#up_mp_file");
+    //-----------------------END-------------------------------------
+    //-------------------注册按钮事件--------------------------------
+    $mp_file_upload.click(function () {
+        var up_mp_file = $.trim($up_mp_file.val());
+        if (up_mp_file == '') {
+            toastr.warning('请先选择文件，再点击开始绑定！');
+            return false;
+        }
+        var basename = up_mp_file.split("\\").pop();
+        if (!/^MP_verify\_.*[a-zA-Z0-9]\.txt$/.test(basename)) {
+            toastr.warning('请上传格式为 MP_verify_xxx.txt格式的文件（xxx为字母或数字）');
+            return false;
+        }
+        var env_name = $env_name.find("li.active a").data("value");
+        var func_type = $func_type.find("option:selected").val();
+        var form_data = new FormData($up_mp_form[0]);
+        form_data.append("env_name", env_name);
+        form_data.append("func_type", func_type);
+        var url = "/tomcat/tenantSet/operatorTenantSet";
+        closeButton($mp_file_upload);
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status == "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function (data) {
+                openButton($mp_file_upload);
+            }
+        });
+    });
+    //-----------------------END-------------------------------------
+</script>

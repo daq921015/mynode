@@ -1,0 +1,254 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <form id="form_deploy" class="form-inline" role="form">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="control-label">环境:</label>
+                    <select name="env_name" class="form-control" style="width: 125px">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">分组:</label>
+                    <select name="group_name" class="form-control" style="width: 80px">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">程序:</label>
+                    <select name="program_name" class="form-control" style="width: 135px">
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <label class="control-label">版本号:</label>
+                    <select name="appversion" class="form-control" style="width: 135px">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">版本类型:</label>
+                    <select name="apptype" class="form-control">
+                        <option value="snapshots">snapshots</option>
+                        <option value="releases">releases</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input id="btn_upload" type="button" class="btn btn-default" value="上传">
+                    <div class="checkbox">
+                        <label><input name="up_deploy" type="checkbox" value="1">上传后自动部署</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <label class="form-inline">
+                    目标服务器:
+                </label>
+                <span id="target">
+                </span>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <input type="button" class="btn btn-default" onclick="clearLog();" value="清空输出">
+                <input id="btn_deploy" type="button" class="btn btn-default" value="部署程序">
+                <input id="btn_getwar" type="button" class="btn btn-default" value="显示war包">
+                <input id="btn_console_log" type="button" class="btn btn-default" value="控制台日志">
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <textarea id="logtext" rows="32" cols="120" disabled="disabled" wrap="off"
+                          style="overflow:scroll;" class="form-control col-sm-12">
+                </textarea>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+    //快捷键清空输出台 alt+c
+    $(document).keydown(function (event) {
+        if (event.altKey && event.keyCode == "67") {
+            clearLog();
+        }
+    });
+    //------------------获取页面元素--------------------------------
+    var $form_deploy = $("#form_deploy");//表单
+    var $btn_deploy = $("#btn_deploy");//部署程序
+    var $btn_getwar = $("#btn_getwar");//获取war
+    var $btn_console_log = $("#btn_console_log");//控制台日志
+    var $btn_upload = $("#btn_upload");//上传
+    var $logtext = $("#logtext");
+    var $target = $("#target");//部署服务器
+    //select change
+    var $env_name = $form_deploy.find('select[name="env_name"]');
+    var $group_name = $form_deploy.find('select[name="group_name"]');
+    var $program_name = $form_deploy.find("select[name='program_name']");
+    var $appversion = $form_deploy.find("select[name='appversion']");
+    var $apptype = $form_deploy.find("select[name='apptype']");
+    //----------------------END-------------------------------------
+    //--------------------注册事件----------------------------------
+    $btn_getwar.click(function () {
+        getWars();
+    });
+    $btn_upload.click(function () {
+        autoUpload();
+    });
+    $btn_deploy.click(function () {
+        doDeploy();
+    });
+    $btn_console_log.click(function () {
+        getTomcatLog();
+    });
+    //----------------------END-------------------------------------
+    //--------------------下拉框初始化及监听下拉框变化--------------
+    <%- include('../initTomcatDropDownBoxAdd.ejs') %>
+    $program_name.change(function () {
+        getVersions();
+        getTargetServer();
+    });
+    $apptype.change(function () {
+        getVersions();
+    });
+    <% for(var i = 0, j = versions.length;i < j;i++){ %>
+    $appversion.append('<option value="' + "<%= versions[i] %>" + '">' + "<%= versions[i] %>" + '</option>');
+    <% } %>
+    //初始化部署服务器
+    var deploy_server =<%- JSON.stringify(deploy_server) %>;
+    _.each(deploy_server, function (item) {
+        $target.append("<label class='radio-inline'><input type='radio' name='app_server_id' value='" + item["app_server_id"] + "'>" + item["alias"] + "</label>");
+    });
+    if (_.has(from_data, "app_server_id")) {
+        $target.find("input[value='" + from_data["app_server_id"] + "']").attr('checked', 'true');
+    }
+    //----------------------END-------------------------------------
+    //--------------------调用具体操作------------------------------
+    //清空输出日志
+    var clearLog = function () {
+        $logtext.val("");
+    };
+    //textarea中显示日志
+    var showLog = function (content) {
+        var oldcontent = $logtext.val();
+        var date = new Date();
+        $logtext.val(oldcontent + date.Format("[yyyy-MM-dd hh:mm:ss] ") + content + "\n");
+        $logtext.scrollTop($logtext[0].scrollHeight);
+    };
+    //部署程序
+    var doDeploy = function () {
+        var from_data = new FormData($form_deploy[0]);
+        var data = from_data.ConvertToJson();
+        if (!_.has(data, "app_server_id")) {
+            toastr.warning('请先选中目标服务器！');
+            return false;
+        }
+        closeButton($btn_deploy);
+        showLog("正在部署程序，请稍候...[环境:" + data["env_name"] + ",分组:" + data["group_name"] + ",程序:" + data["program_name"] + ",版本:" + data["apptype"] + "-" + data["appversion"] + "]")
+        var url = "/tomcat/deployTomcat/doDeploy"
+        $.get(url, data, function (data, status) {
+            openButton($btn_deploy);
+            if (status) {
+                var obj = $.parseJSON(data);
+                showLog(obj.msg);
+            } else {
+                showLog("部署失败!");
+            }
+        });
+    }
+    //显示所有war包
+    var getWars = function () {
+        closeButton($btn_getwar);
+        var from_data = new FormData($form_deploy[0]);
+        from_data = from_data.ConvertToJson();
+        var url = "/tomcat/deployTomcat/getWars"
+        $.get(url, from_data, function (data, status) {
+            openButton($btn_getwar);
+            if (status) {
+                var obj = $.parseJSON(data);
+                if (obj.data.length > 0) {
+                    for (var i = 0, j = obj.data.length; i < j; i++) {
+                        showLog(obj.data[i]);
+                    }
+                } else {
+                    showLog("获取war包信息为空!");
+                }
+            } else {
+                showLog("获取所有war包信息失败!");
+            }
+        });
+    };
+    //获取控制台日志
+    var getTomcatLog = function () {
+        var from_data = new FormData($form_deploy[0]);
+        var data = from_data.ConvertToJson();
+        if (!_.has(data, "app_server_id")) {
+            toastr.warning('请先选中目标服务器！');
+            return false;
+        }
+        var url = "/tomcat/tomcatDashboard/getTomcatLog?env_name=" + data["env_name"] + "&group_name=" + data["group_name"] + "&program_name=" + data["program_name"] + "&app_server_id=" + data["app_server_id"];
+        window.open(url);
+    };
+    //上传
+    var autoUpload = function () {
+        var from_data = new FormData($form_deploy[0]);
+        var data = from_data.ConvertToJson();
+        if (data["up_deploy"] == 1 && data["app_server_id"] == "undefined") {
+            toastr.warning('上传后自动部署已选中,请选中目标服务器！');
+            return false;
+        }
+        showLog("正在上传war包，请稍候...[环境:" + data["env_name"] + ",分组:" + data["group_name"] + ",程序:" + data["program_name"] + ",版本:" + data["apptype"] + "-" + data["appversion"] + "]")
+        closeButton($btn_upload);
+        var url = "/tomcat/deployTomcat/autoUpload"
+        $.get(url, data, function (data, status) {
+            openButton($btn_upload);
+            if (status) {
+                var obj = $.parseJSON(data);
+                showLog(obj.msg);
+            } else {
+                showLog("部署失败!");
+            }
+        });
+    };
+    var getVersions = function () {
+        var from_data = new FormData($form_deploy[0]);
+        from_data = from_data.ConvertToJson();
+        var url = "/tomcat/deployTomcat/getVersions"
+        $.get(url, from_data, function (data, status) {
+            $appversion.empty();
+            var obj = $.parseJSON(data);
+            if (obj.status === "success") {
+                for (var i = 0, j = obj.data.length; i < j; i++) {
+                    $appversion.append('<option value="' + obj.data[i] + '">' + obj.data[i] + '</option>');
+                }
+            } else {
+                toastr.warning("获取版本号失败");
+            }
+        });
+    }
+    var getTargetServer = function () {
+        var from_data = new FormData($form_deploy[0]);
+        from_data = from_data.ConvertToJson();
+        var url = "/tomcat/deployTomcat/getTargetServer"
+        $.get(url, from_data, function (data, status) {
+            $target.empty();
+            var obj = $.parseJSON(data);
+            if (obj.status == "success") {
+                _.each(obj.data, function (item) {
+                    $target.append("<label class='radio-inline'><input type='radio' name='app_server_id' value='" + item["app_server_id"] + "'>" + item["alias"] + "</label>");
+                });
+            } else {
+                toastr.warning("获取部署服务器失败");
+            }
+        });
+    }
+    //----------------------END-------------------------------------
+</script>
+<%- include('../../footer.ejs') %>

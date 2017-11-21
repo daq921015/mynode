@@ -1,0 +1,13 @@
+server:
+    port: 7777
+endpoints:
+    jmx:
+        enabled: false
+        unique-names: true
+info:
+    app:
+        version: '$appversion'
+---
+spring:
+    jmx:
+        enabled: false

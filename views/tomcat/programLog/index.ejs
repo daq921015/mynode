@@ -1,0 +1,195 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-10">
+            <ul id="search_env" class="nav nav-tabs">
+                <% for (var i = 0, j = envs.length;i < j;i++){ %>
+                <li><a href="#" data-value="<%= envs[i] %>" data-toggle="tab"><%= envs[i] %></a>
+                </li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <form id="form_log" class="form-inline" role="form">
+                <div class="form-group">
+                    <label class="control-label">程序:</label>
+                    <select name="search_program" class="form-control">
+                        <option value="z0/web-service">z0/web-service</option>
+                        <option value="z0/http-service">z0/http-service</option>
+                        <option value="z0/job-service">z0/job-service</option>
+                        <option value="z1/saas-portal">z1/saas-portal</option>
+                        <option value="z1/saas-posapi">z1/saas-posapi</option>
+                        <option value="z1/saas-appapi">z1/saas-appapi</option>
+                        <option value="z2/saas-business">z2/saas-business</option>
+                        <option value="z3/goods-service">z3/goods-service</option>
+                        <option value="z4/saas-gateway">z4/saas-gateway</option>
+                        <option value="za1/erp-chain">za1/erp-chain</option>
+                        <option value="za1/o2o-wx">za1/o2o-wx</option>
+                        <option value="zb1/erp-chain">zb1/erp-chain</option>
+                        <option value="zc1/erp-store">zc1/erp-store</option>
+                        <option value="zc1/pos-service">zc1/pos-service</option>
+                        <option value="zd1/erp-chain">zd1/erp-chain</option>
+                        <option value="zd1/o2o-wx">zd1/o2o-wx</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">日志时间</label>
+                    <div id='datetimepicker1' class='input-group date'>
+                        <input name="start_time" type='text' class="form-control" placeholder="开始时间"/>
+                        <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">至</label>
+                    <div id='datetimepicker2' class='input-group date'>
+                        <input name="end_time" type='text' class="form-control" placeholder="结束时间"/>
+                        <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                    </div>
+                </div>
+                <div class="form-group self-select">
+                    <label class="control-label">日志类型:</label>
+                    <select name="search_type" class="form-control">
+                        <option value="">全部</option>
+                        <option value="INFO">INFO</option>
+                        <option value="ERROR">ERROR</option>
+                        <option value="DEBUG">DEBUG</option>
+                        <option value="WARN">WARN</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" style="width: 360px"
+                           placeholder="模糊查询日志文本">
+                    <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_program_log"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $form_log = $("#form_log");//查询表单
+        var $tb_program_log = $("#tb_program_log");//表格
+        var $btn_query = $("#btn_query");//提交按钮
+        var $search_env = $("#search_env");
+        //时间控件
+        var $datetimepicker1 = $("#datetimepicker1");
+        var $datetimepicker2 = $("#datetimepicker2");
+        //环境选项卡
+        var $tabs = $search_env.find("a");
+        //----------------------END-------------------------------------
+        //--------------初始化时间控件、下拉控件/选项卡更换-------------
+        var custom_option = {
+            startView: "day",
+            minView: "hour",
+            maxView: "day"
+        };
+        var startTime = moment(new Date().getTime() - (2 * 60 * 60 * 1000)).format("YYYY-MM-DD HH:mm:ss");
+        dateControlInit($datetimepicker1, custom_option, startTime);
+        dateControlInit($datetimepicker2, custom_option, getToDayArray()[1]);
+        //选项卡更换,绑定点击事件
+        $tabs.on("click", function (e) {
+            var $that = $(this);
+            $tabs.css("background-color", "");
+            $that.css("background-color", "#99FFFF");
+        });
+        //默认选中第一个
+        if (typeof $tabs[0]) {
+            $tabs[0].click();
+        }
+        //----------------------END-------------------------------------
+        //---------------------表格初始化等相关操作---------------------
+        var mytable = new MyTable($tb_program_log, $btn_query, $form_log);
+        mytable.bootStrap.url = "/tomcat/programLog/list";
+        mytable.bootStrap.columns = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'log_time',
+            title: 'log_time'
+        }, {
+            halign: "center",
+            align: "left",
+            valign: "middle",
+            sortable: false,
+            field: 'formatted_message',
+            title: 'formatted_message',
+            cellStyle: function cellStyle(value, row, index) {
+                var color = "black";
+                if (row["level_string"] == "ERROR") {
+                    color = "red";
+                } else if (row["level_string"] == "WARN") {
+                    color = "#BBBB00";
+                }
+                return {
+                    css: {
+                        "max-width": "1000px",
+                        "word-wrap": "break-word",
+                        "color": color
+                    }
+                };
+            },
+            formatter: function (value, row, index) {
+                return value.replace(/<[^<>]+?>/g, '');
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'logger_name',
+            title: 'logger_name'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'level_string',
+            title: 'level_string'
+        }, {
+            halign: "left",
+            align: "left",
+            valign: "middle",
+            sortable: false,
+            field: 'thread_name',
+            title: 'thread_name'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'event_id',
+            title: 'event_id'
+        }];
+        //其它条件
+        mytable.currentFormData = function () {
+            return {
+                search_env: $search_env.find("li.active a").data("value")
+            }
+        };
+        //绑定查询按钮
+        $btn_query.click(function () {
+            if (!$tb_program_log.bootstrapTable("getOptions").url) {
+                $tb_program_log.bootstrapTable(mytable.getBootStrap());
+            } else {
+                $tb_program_log.bootstrapTable("refresh");
+            }
+        });
+    });
+</script>
+<%- include('../../footer.ejs') %>

@@ -1,0 +1,119 @@
+---
+grails:
+    profile: web
+    codegen:
+        defaultPackage: saas.business
+    env: production
+server:
+    port: 9003
+
+info:
+    app:
+        name: 'saas-business'
+        version: '$appversion'
+        grailsVersion: '3.0.3'
+spring:
+    groovy:
+        template:
+            check-template-location: false
+
+endpoints:
+    jmx:
+        enabled: false
+        unique-names: true
+
+---
+grails:
+    mime:
+        disable:
+            accept:
+                header:
+                    userAgents:
+                        - Gecko
+                        - WebKit
+                        - Presto
+                        - Trident
+        types:
+            all: '*/*'
+            atom: application/atom+xml
+            css: text/css
+            csv: text/csv
+            form: application/x-www-form-urlencoded
+            html: 
+              - text/html
+              - application/xhtml+xml
+            js: text/javascript
+            json:
+              - application/json
+              - text/json
+            multipartForm: multipart/form-data
+            rss: application/rss+xml
+            text: text/plain
+            hal: 
+              - application/hal+json
+              - application/hal+xml
+            xml:
+              - text/xml
+              - application/xml
+    urlmapping:
+        cache:
+            maxsize: 1000
+    controllers:
+        defaultScope: singleton
+        upload:
+           maxFileSize: 10485760 #10*1024*1024
+           maxRequestSize: 10485760
+    converters:
+        encoding: UTF-8
+    views:
+        default:
+            codec: html
+        gsp:
+            encoding: UTF-8
+            htmlcodec: xml
+            codecs:
+                expression: html
+                scriptlets: html
+                taglib: none
+                staticparts: none
+
+hibernate:
+    cache:
+        queries: true
+
+---
+dataSource:
+    pooled: true
+    jmxExport: false
+    driverClassName: com.mysql.jdbc.Driver
+    username: $saas_db_user
+    password: $saas_db_pwd
+    dbCreate: none
+
+environments:
+    production:
+        properties: pro.properties
+        dataSource:
+            url: jdbc:mysql://$saas_db_ip:$saas_db_port/saas-db
+            logSql : false
+            properties:
+                jmxEnabled: false
+                initialSize: 5
+                maxActive: 50
+                minIdle: 5
+                maxIdle: 25
+                maxWait: 10000
+                maxAge: 600000
+                timeBetweenEvictionRunsMillis: 5000
+                minEvictableIdleTimeMillis: 60000
+                validationQuery: SELECT 1
+                validationQueryTimeout: 3
+                validationInterval: 15000
+                testOnBorrow: true
+                testWhileIdle: true
+                testOnReturn: false
+                jdbcInterceptors: ConnectionState;StatementCache(max=200)
+                defaultTransactionIsolation: 2 #java.sql.Connection.TRANSACTION_READ_COMMITTED
+                removeAbandoned: true
+                removeAbandonedTimeout: 300
+

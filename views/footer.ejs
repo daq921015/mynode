@@ -1,0 +1,19 @@
+<script type="text/javascript">
+    $(function () {
+        //登录完成后加载首页
+//        $("ul[class='nav-list'] li:eq(0)").addClass("selected")
+//        $("#mainDiv").load("/home/homePage/index");
+        //全局设置浏览器会话超时，如果是ajax请求直接重定向到登录页
+        $.ajaxSetup({
+            complete: function (xhr, textStatus, errmsg) {
+                if (xhr.status === 911) {
+                    window.location.href = "/public/login" + "?_=" + Date.now();
+                    return;
+                }
+            },
+            cache: false
+        });
+    });
+</script>
+</body>
+</html>

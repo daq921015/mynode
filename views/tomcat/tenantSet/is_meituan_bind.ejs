@@ -1,0 +1,196 @@
+<div class="row">
+    <div class="col-sm-3">
+        提示：
+        请复制链接后在浏览器中打开，使用商户美团账号登录即可，美团要求使用IE11及以上版本的IE浏览器或者chrome浏览器完成该操作。
+    </div>
+    <div class="col-sm-8">
+        <form id="form_meituan" class="form-inline col-sm-12" role="form">
+            <div class="form-group">
+                <label class="control-label">商户信息</label>
+                <input name="tenant_code" type="text" class="form-control" placeholder="商户号、手机号、商户id">
+                <span class="star">*</span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">门店编号</label>
+                <input name="branch_code" type="text" class="form-control" placeholder="门店编号">
+            </div>
+            <div class="form-group">
+                <input id="btn_meituan" type="button" class="btn btn-default" value="查询">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row" style="margin-top: 5px;">
+    <table id="tb_meituan" class="table table-hover">
+    </table>
+</div>
+<!--绑定弹窗-->
+<div id="div_model_display" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" style="width: 880px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 id="model_title" class="modal-title">弹窗名称</h4>
+            </div>
+            <div class="modal-body">
+                <span id="model_body"></span>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //-----------------------页面元素-------------------------------------
+        var $env_name = $("#env_name");//环境选择
+        var $func_type = $("#func_type");//功能选择
+        var $tb_meituan = $("#tb_meituan");//表格
+        var $btn_meituan = $("#btn_meituan");//查询按钮
+        var $div_model_display = $("#div_model_display");//弹窗
+        var $model_title = $("#model_title");//弹窗标题
+        var $model_body = $("#model_body");//弹窗内容
+        //form
+        var $form_meituan = $("#form_meituan");//表单
+        //公共变量
+        var env_name = $env_name.find("li.active a").data("value");
+        var func_type = $func_type.find("option:selected").val();
+        var display_content = {
+            "www_ali": {
+                "bind_group": "https://open-erp.meituan.com/storemap?developerId=100139&businessId=1&ePoiId=[epoiId]&signKey=01b7d2lgmdylgiee&eName=[branch_name]",
+                "bind_take_out": "https://open-erp.meituan.com/storemap?developerId=100139&businessId=2&ePoiId=[epoiId]&signKey=01b7d2lgmdylgiee&eName=[branch_name]",
+                "unbind_group": "https://open-erp.meituan.com/releasebinding?signKey=01b7d2lgmdylgiee&businessId=1&appAuthToken=[meituan_token]",
+                "unbind_take_out": "https://open-erp.meituan.com/releasebinding?signKey=01b7d2lgmdylgiee&businessId=2&appAuthToken=[meituan_token]"
+            },
+            "sanmi_www": {
+                "bind_group": "https://open-erp.meituan.com/storemap?developerId=100811&businessId=1&ePoiId=[epoiId]&signKey=u4tcpb3inw9yorfk&eName=[branch_name]",
+                "bind_take_out": "https://open-erp.meituan.com/storemap?developerId=100811&businessId=2&ePoiId=[epoiId]&signKey=u4tcpb3inw9yorfk&eName=[branch_name]",
+                "unbind_group": "https://open-erp.meituan.com/releasebinding?signKey=u4tcpb3inw9yorfk&businessId=1&appAuthToken=[meituan_token]",
+                "unbind_take_out": "https://open-erp.meituan.com/releasebinding?signKey=u4tcpb3inw9yorfk&businessId=2&appAuthToken=[meituan_token]"
+            }
+        }
+        //-----------------------END-------------------------------------
+        //额外参数
+        var mytable = new MyTable($tb_meituan, $btn_meituan, $form_meituan)
+        mytable.form_data = {
+            env_name: env_name,
+            func_type: func_type
+        };
+        mytable.bootStrap.url = "/tomcat/tenantSet/operatorTenantSet";
+        mytable.bootStrap.columns = [{
+            checkbox: true
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_id',
+            title: '商户id'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_code',
+            title: '商户编号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_name',
+            title: '商户名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_id',
+            title: '门店id'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_code',
+            title: '门店编号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_name',
+            title: '门店名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'partition_code',
+            title: '分区'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_create_at',
+            title: '门店创建时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'meituan_token',
+            title: 'meituan_token'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: '',
+            title: '操作',
+            events: {
+                'click input[name="meiTuan"]': function (e, value, row, index) {
+                    var $that = $(this);
+                    var operator_val = $that.val();
+                    var operator_data = $that.data("value");
+                    env_name = $env_name.find("li.active a").data("value");
+                    var tenant_id = row["tenant_id"] || '';
+                    var branch_id = row["branch_id"] || '';
+                    var branch_name = row["branch_name"] || '';
+                    var meituan_token = row["meituan_token"] || ''
+                    $model_title.text(operator_val);
+                    var reg = new RegExp("\\[([^\\[\\]]*?)\\]", 'igm');
+                    var content_url = display_content[env_name][operator_data];
+                    var _url = content_url.replace(reg, function (node, key) {
+                        return {
+                            epoiId: tenant_id + "Z" + branch_id,
+                            branch_name: branch_name,
+                            meituan_token: meituan_token
+                        }[key];
+                    });
+                    $model_body.text(_url);
+                    $div_model_display.modal("show");
+                }
+            },
+            formatter: function (value, row, index) {
+                var tenant_id = row["tenant_id"];
+                var branch_id = row["branch_id"];
+                return [
+                    '<input name="meiTuan" type="button" class="btn btn-default" data-value="bind_group" value="团购绑定">',
+                    '<input name="meiTuan" type="button" class="btn btn-default" data-value="bind_take_out" value="外卖绑定">',
+                    '<input name="meiTuan" type="button" class="btn btn-default" data-value="unbind_group" value="团购解绑">',
+                    '<input name="meiTuan" type="button" class="btn btn-default" data-value="unbind_take_out" value="外卖解绑">'
+                ].join('');
+            }
+        }];
+        $btn_meituan.click(function () {
+            // 查询前销毁之前表格，清除之前输出内容
+            $tb_meituan.bootstrapTable(mytable.getBootStrap());
+        });
+    });
+</script>

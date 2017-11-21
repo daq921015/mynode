@@ -1,0 +1,146 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">程序权限设置</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_tomcat_auth" class="form-inline" role="form">
+                <div class="form-group">
+                    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                    <button id="<%= operator[i]["label_id"] %>" type="button"
+                            class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                        <span aria-hidden="true"
+                              class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                    </button>
+                    <% } %>
+                </div>
+                <div class="form-group">
+                    <label class="ccontrol-label">环境:</label>
+                    <select name="env_name" class="form-control" style="width: 125px">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">分组:</label>
+                    <select name="group_name" class="form-control" style="width: 80px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">程序:</label>
+                    <select name="program_name" class="form-control" style="width: 135px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="登录名/用户名">
+                    <button type="button" id="btn_query" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_tomcat_auth"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+
+    //------------------获取页面元素--------------------------------
+    var $form_tomcat_auth = $("#form_tomcat_auth");//表单
+    var $tb_tomcat_auth = $("#tb_tomcat_auth");//表格
+    var $btn_query = $("#btn_query");//查询提交
+    //select change
+    var $env_name = $form_tomcat_auth.find('select[name="env_name"]');
+    var $group_name = $form_tomcat_auth.find('select[name="group_name"]');
+    var $program_name = $form_tomcat_auth.find("select[name='program_name']");
+    //----------------------END-------------------------------------
+    <%- include('../initTomcatDropDownBoxIndex.ejs') %>
+    //----------------------END-------------------------------------
+    //---------------------初始化表格参数---------------------------
+    var mytable = new MyTable($tb_tomcat_auth, $btn_query, $form_tomcat_auth);
+    mytable.bootStrap.url = "/tomcat/tomcatAuth/list";
+    mytable.bootStrap.columns = [{
+        checkbox: true
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'login_name',
+        title: '登录名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'user_name',
+        title: '用户名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'env_name',
+        title: '环境名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: true,
+        field: 'group_name',
+        title: '分组名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: true,
+        field: 'program_name',
+        title: '程序名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'privilege_name',
+        title: '权限名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'privilege_code',
+        title: '权限编号'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'memo',
+        title: '备注'
+    }];
+    //注册表格事件
+    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+    <% if(operator[i]["label_id"] == "btn_del"){ %>
+    //注册删除按钮的事件
+    $("#btn_del").click(function () {
+        mytable.delData("<%= operator[i]["res_url"] %>")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_add"){ %>
+    //注册新增按钮
+    $("#btn_add").click(function () {
+        mytable.addData("<%= operator[i]["res_url"] %>", "新增程序权限")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_edit"){ %>
+    //注册修改按钮
+    $("#btn_edit").click(function () {
+        mytable.editData("<%= operator[i]["res_url"] %>", "修改程序权限")
+    });
+    <% } %>
+    <% } %>
+    //----------------------END-------------------------------------
+    $tb_tomcat_auth.bootstrapTable(mytable.getBootStrap());
+    //绑定查询按钮
+    $btn_query.click(function () {
+        $tb_tomcat_auth.bootstrapTable("refresh");
+    });
+</script>
+<%- include('../../footer.ejs') %>

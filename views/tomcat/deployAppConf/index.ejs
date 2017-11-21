@@ -1,0 +1,198 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">tomcat程序配置文件：pro.properties</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_query" class="form-inline" role="form">
+                <div class="form-group">
+                    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                    <button id="<%= operator[i]["label_id"] %>" type="button"
+                            class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                        <span aria-hidden="true"
+                              class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                    </button>
+                    <% } %>
+                </div>
+                <div class="form-group self-select">
+                    <label class="control-label">环境:</label>
+                    <select name="env_name" class="form-control" style="width: 125px">
+                    </select>
+                </div>
+                <div class="form-group self-select">
+                    <label class="control-label">分组:</label>
+                    <select name="group_name" class="form-control" style="width: 80px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group self-select">
+                    <label class="control-label">程序:</label>
+                    <select name="program_name" class="form-control" style="width: 135px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="key值/value值">
+                    <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <table>
+                <tr id="other_conf"></tr>
+            </table>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <table id="tb_deploy_app_conf"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $tb_deploy_app_conf = $("#tb_deploy_app_conf");//表格
+        var $btn_query = $("#btn_query");//查询
+        var $form_query = $("#form_query");//表单
+        var $other_conf = $("#other_conf");//表格、其它配置文件
+        //查询条件，下拉使用(控制不同环境程序配置按钮)
+        var $env_name = $form_query.find('select[name="env_name"]');
+        var $group_name = $form_query.find('select[name="group_name"]');
+        var $program_name = $form_query.find("select[name='program_name']");
+        //----------------------END-------------------------------------
+        //-----------------初始化下拉控件、监控下拉框变化---------------
+        <%- include('../initTomcatDropDownBoxIndex.ejs') %>
+        //----------------------END-------------------------------------
+        //---------------------初始化表格参数---------------------------
+        var mytable = new MyTable($tb_deploy_app_conf, $btn_query, $form_query);
+        mytable.bootStrap.url = "/tomcat/deployAppConf/list";
+        mytable.bootStrap.columns = [{
+            checkbox: true
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'env_name',
+            title: '环境名称',
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'group_name',
+            title: '分组名称',
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'program_name',
+            title: '程序名称',
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'conf_key',
+            title: 'key值'
+        }, {
+            halign: "left",
+            align: "left",
+            valing: "middle",
+            sortable: false,
+            field: 'conf_value',
+            title: 'value值'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'memo',
+            title: '备注'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'created_by',
+            title: '创建人'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'created_at',
+            title: '创建时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'updated_by',
+            title: '最后更新人'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'updated_at',
+            title: '最后更新时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
+            }
+        }];
+        //注册表格事件
+        <% for(var i = 0, j = operator.length;i < j;i++){ %>
+        <% if(operator[i]["label_id"] == "btn_del"){ %>
+        //注册删除按钮的事件
+        $("#btn_del").click(function () {
+            mytable.delData("<%= operator[i]["res_url"] %>")
+        });
+        <% }else if(operator[i]["label_id"] == "btn_add"){ %>
+        //注册新增按钮
+        $("#btn_add").click(function () {
+            mytable.addData("<%= operator[i]["res_url"] %>", "新增程序配置")
+        });
+        <% }else if(operator[i]["label_id"] == "btn_edit"){ %>
+        //注册修改按钮
+        $("#btn_edit").click(function () {
+            mytable.editData("<%= operator[i]["res_url"] %>", "修改程序配置")
+        });
+        <% } %>
+        <% } %>
+        //----------------------END-------------------------------------
+        $tb_deploy_app_conf.bootstrapTable(mytable.getBootStrap());
+        //绑定查询按钮
+        $btn_query.click(function () {
+            //防止重复点击,禁用按钮
+            var group_name = $group_name.find("option:selected").val();
+            var program_name = $program_name.find("option:selected").val();
+            var url = "/tomcat/deployAppConf/getConfFiles"
+            $.get(url, {group_name: group_name, program_name: program_name}, function (data, status) {
+                $other_conf.empty();
+                var obj = $.parseJSON(data);
+                if (status === "success" && obj.status === "success") {
+                    for (var key in obj.data) {
+                        $other_conf.append("<td style='padding-right: 10px'><a target='_blank' href='/tomcat/deployAppConf/readConfFile?file_path=" + obj.data[key] + "'>" + key + "</a></td>");
+                    }
+                }
+            });
+            //保留之前的部分属性
+            $tb_deploy_app_conf.bootstrapTable("refresh");
+        })
+    });
+</script>
+<%- include('../../footer.ejs') %>

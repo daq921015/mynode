@@ -1,0 +1,66 @@
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_history_upload" role="form">
+                <div class="form-group">
+                    <label>文件输入</label>
+                    <input name="toutiao_file" type="file" size="50">
+                    <p class="help-block">请选择后缀名为 .xlsx的Excel文件</p>
+                </div>
+                <div class="form-group pull-right">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    <button id="btn_history_upload" type="button" class="btn btn-primary">开始上传
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    //-----------------获取页面元素---------------------------
+    var $form_history_upload = $("#form_history_upload");//表单
+    var $btn_history_upload = $("#btn_history_upload");//上传按钮
+    //input
+    var $file = $form_history_upload.find("input[name='toutiao_file']");
+    //---------------------END-------------------------------
+    $btn_history_upload.click(function () {
+        var toutiao_file = $.trim($file.val());
+        if (toutiao_file === '') {
+            toastr.warning('请先选择文件，再点击开始上传！');
+            return false;
+        }
+        if (toutiao_file.split(".").pop() !== "xlsx") {
+            toastr.warning('请选择后缀名为 .xlsx的Excel文件！');
+            return false;
+        }
+        closeButton($btn_history_upload)
+        $btn_history_upload.text("正在上传,请稍等...");
+        //表单提交
+        var url = '/toutiao/historyAnalysis/upload';
+        var form_data = new FormData($form_history_upload[0]);
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.msg);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                openButton($btn_history_upload)
+                $btn_history_upload.text("开始上传");
+                $('div[id^="mdl"]').modal('hide');
+            }
+        });
+    });
+</script>

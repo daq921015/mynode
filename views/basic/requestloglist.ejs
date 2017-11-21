@@ -1,0 +1,90 @@
+<%- include('../header.ejs') %>
+<%- include('../menu.ejs') %>
+<%- include('../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <h3 class="page-title">程序请求日志查询</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_query" class="form-inline" role="form">
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="登录名或用户名">
+                    <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 10px">
+        <div class="col-sm-12">
+            <table id="tb_request_log"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+    //----------------------------获取页面元素-------------------------------------
+    var $form_query = $("#form_query");
+    var $btn_query = $("#btn_query");
+    var $tb_request_log = $("#tb_request_log");
+    //--------------------------------END-----------------------------------------
+    //--------------------------------表格----------------------------------------
+    var mytable = new MyTable($tb_request_log, $btn_query, $form_query);
+    mytable.bootStrap.url = "/basic/requestlog/list";
+    mytable.bootStrap.columns = [{
+        checkbox: true
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'login_name',
+        title: '登录名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'parent_name',
+        title: '父类菜单'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'res_name',
+        title: '单击按钮'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'http_method',
+        title: '请求类型'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'created_at',
+        title: '请求时间',
+        formatter: function (value) {
+            return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
+        }
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'user_name',
+        title: '用户名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'request_ip',
+        title: '请求ip'
+    }];
+    $tb_request_log.bootstrapTable(mytable.getBootStrap());
+    $btn_query.click(function () {
+        $tb_request_log.bootstrapTable("destroy").bootstrapTable(mytable.getBootStrap());
+    });
+    //--------------------------------END-----------------------------------------
+</script>
+<%- include('../footer.ejs') %>

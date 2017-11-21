@@ -1,0 +1,350 @@
+<div class="row">
+    <div class="col-sm-6">
+        <div class="row">
+            <div class="col-sm-12">
+                <label>惠支付配置与查询(绑定与解绑会记录操作日志)</label>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <form id="form_hzf_search" class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">商户信息</label>
+                        <div class="col-sm-6">
+                            <input name="tenant_code" type="text" class="form-control" placeholder="登录名、手机号、商户id">
+                        </div>
+                        <span class="star">*</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">门店编号</label>
+                        <div class="col-sm-6">
+                            <input name="branch_code" type="text" class="form-control" placeholder="门店编号">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-6 col-sm-offset-3">
+                            <input id="btn_hzf_search" type="button" data-value="1" class="btn btn-default" value="查询">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="tb_hzf" class="table table-hover">
+        </table>
+    </div>
+</div>
+<!--绑定弹窗-->
+<div id="div_model_bind" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title" id="myModalLabel"> 惠支付配置 </h4>
+            </div>
+            <div class="modal-body">
+                <form id="form_model_bind" class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label class="col-sm-4 control-label">上传惠支付配置文件</label>
+                        <div class="col-sm-6">
+                            <input id="up_hzf_file" name="up_hzf_file" type="file" class="input-sm"/>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button id="btn_model_bind" type="button" data-value='3' class="btn btn-primary" data-dismiss="modal">
+                    开始绑定
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--检测确认弹窗-->
+<div id="div_model_check" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">惠支付绑定检测</h4>
+            </div>
+            <div class="modal-body">
+                <p>确认检测门店惠支付绑定状态？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+                <button id="btn_model_check" type="button" class="btn btn-primary ok" data-value='5'
+                        data-dismiss="modal">确认检测
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!--解绑确认弹窗-->
+<div id="div_model_unbind" class="modal fade" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">解绑惠支付</h4>
+            </div>
+            <div class="modal-body">
+                <p>确认解绑门店惠支付？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+                <button id="btn_model_unbind" type="button" class="btn btn-primary ok" data-value='4'
+                        data-dismiss="modal">开始解绑
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    //------------------获取页面元素--------------------------------
+    var $env_name = $("#env_name");//环境选择
+    var $func_type = $("#func_type");//功能选择
+    var $tb_hzf = $("#tb_hzf");//结果显示表格
+    //form
+    var $form_hzf_search = $("#form_hzf_search");//惠支付查询
+    var $form_model_bind = $("#form_model_bind");//惠支付绑定
+    //提交
+    var $btn_hzf_search = $("#btn_hzf_search");//hzf查询
+    var $btn_model_bind = $("#btn_model_bind");//开始绑定
+    var $btn_model_check = $("#btn_model_check");//确认检测
+    var $btn_model_unbind = $("#btn_model_unbind");//开始解绑
+    //input
+    var $up_hzf_file = $("#up_hzf_file");//惠支付文件
+    //公共变量
+    var env_name = $env_name.find("li.active a").data("value");
+    var func_type = $func_type.find("option:selected").val();
+    //-----------------------END-------------------------------------
+    //-----------------------表格------------------------------------
+    var mytable = new MyTable($tb_hzf, $btn_hzf_search, $form_hzf_search)
+    mytable.bootStrap.url = "/tomcat/tenantSet/operatorTenantSet";
+    mytable.bootStrap.columns = [{
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'tenant_id',
+        title: '商户id'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'tenant_code',
+        title: '商户编号'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'tenant_name',
+        title: '商户名称'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'branch_id',
+        title: '门店id'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'branch_code',
+        title: '门店编号'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'branch_name',
+        title: '门店名称'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'branch_create_at',
+        title: '门店创建时间',
+        formatter: function (value) {
+            return moment(value).utcOffset(8).format("YYYY-MM-DD HH:ss:mm");
+        }
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'partition_code',
+        title: '商户分区'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'umpay_id',
+        title: '惠支付配置'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        title: '操作',
+        formatter: function (value, rows, index) {
+            var _re;
+            if (typeof rows.umpay_id === "string" && rows.umpay_id.trim() !== "") {
+                _re = "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal'  data-target='#div_model_unbind' style='color:red' value='解绑惠支付'>";
+                _re = _re + "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal'  data-target='#div_model_check' style='color:blue' value='绑定检测'>";
+            } else {
+                _re = "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal' data-target='#div_model_bind' style='color:blue' value='绑定惠支付'>";
+            }
+            return _re;
+        }
+    }];
+    mytable.bootStrap.uniqueId = "branch_id";
+    var exec_type = $btn_hzf_search.data("value");
+    mytable.form_data = {
+        env_name: env_name,
+        func_type: func_type,
+        exec_type: exec_type
+    };
+    //-----------------------END-------------------------------------
+    //-------------------注册按钮事件--------------------------------
+    //查询惠支付信息
+    $btn_hzf_search.click(function () {
+        // 查询前销毁之前表格，清除之前输出内容
+        $tb_hzf.bootstrapTable('destroy').bootstrapTable(mytable.getBootStrap());
+    });
+    //绑定惠支付
+    $btn_model_bind.click(function () {
+        var up_hzf_file = $.trim($up_hzf_file.val());
+        if (up_hzf_file === '') {
+            toastr.warning('请先选择文件，再点击开始绑定！');
+            return false;
+        }
+        if (!/\_\.key\.p8$/.test(up_hzf_file)) {
+            toastr.warning('请选择后缀为 _.key.p8的文件！');
+            return false;
+        }
+        var arrselections = $tb_hzf.bootstrapTable('getSelections');
+        if (arrselections.length === 0) {
+            toastr.warning("请先选中修改门店");
+            return;
+        }
+        var form_data = new FormData($form_model_bind[0]);
+        var exec_type = $(this).data("value");
+        form_data.append("env_name", env_name);
+        form_data.append("func_type", func_type);
+        form_data.append("exec_type", exec_type);
+        var _arr = _.pick(arrselections[0], "tenant_id", "branch_id");
+        for (var key in _arr) {
+            form_data.append(key, _arr[key]);
+        }
+        var url = '/tomcat/tenantSet/operatorTenantSet';
+        closeButton($btn_model_bind);
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                openButton($btn_model_bind);
+                $form_model_bind[0].reset();
+                $("#div_model_bind").modal('hide');
+                $btn_hzf_search.click();
+            }
+        });
+    });
+    //绑定检测
+    $btn_model_check.click(function () {
+        var arrselections = $tb_hzf.bootstrapTable('getSelections');
+        if (arrselections.length === 0) {
+            toastr.warning("请先选中修改门店");
+            return;
+        }
+        var exec_type = $(this).data("value");
+        var data = {
+            env_name: env_name,
+            func_type: func_type,
+            exec_type: exec_type
+        };
+        var _arr = _.pick(arrselections[0], "tenant_id", "branch_id", "umpay_id");
+        for (var key in _arr) {
+            data[key] = _arr[key];
+        }
+        var url = "/tomcat/tenantSet/operatorTenantSet";
+        closeButton($btn_model_check);
+        $.get(url, data, function (data, status) {
+            openButton($btn_model_check);
+            $btn_hzf_search.click();
+            $("#div_model_check").modal('hide');
+            if (status === "success") {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            } else {
+                toastr.error("内部服务器错误")
+            }
+        });
+    });
+    //解绑惠支付
+    $btn_model_unbind.click(function () {
+        var arrselections = $tb_hzf.bootstrapTable('getSelections');
+        if (arrselections.length === 0) {
+            toastr.warning("请先选中修改门店");
+            return;
+        }
+        var exec_type = $(this).data("value");
+        var data = {
+            env_name: env_name,
+            func_type: func_type,
+            exec_type: exec_type
+        };
+        var _arr = _.pick(arrselections[0], "tenant_id", "branch_id", "umpay_id");
+        for (var key in _arr) {
+            data[key] = _arr[key];
+        }
+        var url = "/tomcat/tenantSet/operatorTenantSet";
+        closeButton($btn_model_unbind);
+        $.get(url, data, function (data, status) {
+            openButton($btn_model_unbind);
+            $btn_hzf_search.click();
+            $("#div_model_unbind").modal('hide');
+            if (status === "success") {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            } else {
+                toastr.error("内部服务器错误")
+            }
+        });
+    });
+    //-----------------------END-------------------------------------
+</script>

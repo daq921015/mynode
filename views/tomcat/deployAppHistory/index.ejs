@@ -1,0 +1,177 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">程序部署历史</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_history" class="form-inline" role="form">
+                <div class="form-group">
+                    <label for="datetimepicker1" class="control-label">部署时间:</label>
+                    <div id='datetimepicker1' class='input-group date'>
+                        <input name="start_time" type='text' class="form-control" placeholder="开始时间"/>
+                        <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="datetimepicker2" class="control-label">至</label>
+                    <div id='datetimepicker2' class='input-group date'>
+                        <input name="end_time" type='text' class="form-control" placeholder="结束时间"/>
+                        <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">环境:</label>
+                    <select name="env_name" class="form-control" style="width: 125px">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">分组:</label>
+                    <select name="group_name" class="form-control" style="width: 80px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">程序:</label>
+                    <select name="program_name" class="form-control" style="width: 135px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="宿主机ip/宿主机别名/部署人">
+                    <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_deploy_app_history"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $tb_deploy_app_history = $("#tb_deploy_app_history");//表格
+        var $btn_query = $("#btn_query");//查询
+        var $form_history = $("#form_history");//查询表单
+        var $datetimepicker1 = $("#datetimepicker1");
+        var $datetimepicker2 = $("#datetimepicker2");
+        //select change
+        var $env_name = $form_history.find('select[name="env_name"]');
+        var $group_name = $form_history.find('select[name="group_name"]');
+        var $program_name = $form_history.find("select[name='program_name']");
+        //----------------------END-------------------------------------
+        //-----------------初始化时间控件、下拉控件、监控下拉框变化-----
+        var custom_option = {
+            format: 'yyyy-mm-dd hh:ii',
+            minView: "hour"
+        };
+        dateControlInit($datetimepicker1, custom_option, getThisMonthArray()[0]);
+        dateControlInit($datetimepicker2, custom_option, getThisMonthArray()[1]);
+        <%- include('../initTomcatDropDownBoxIndex.ejs') %>
+        //----------------------END-------------------------------------
+        //---------------------初始化表格参数---------------------------
+        var mytable = new MyTable($tb_deploy_app_history, $btn_query, $form_history)
+        mytable.bootStrap.url = "/tomcat/deployAppHistory/list";
+        mytable.bootStrap.columns = [{
+            checkbox: true
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'env_name',
+            title: '环境名称',
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: true,
+            field: 'group_name',
+            title: '分组名称',
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: true,
+            field: 'program_name',
+            title: '程序名称',
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'alias',
+            title: '程序别名'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'host_ip',
+            title: '宿主机ip'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'host_alias',
+            title: '宿主机别名'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'apptype',
+            title: '版本类型'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'appversion',
+            title: '版本号'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'user_name',
+            title: '部署人'
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: true,
+            field: 'deploy_time',
+            title: '部署时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valing: "middle",
+            sortable: false,
+            field: 'deploy_result',
+            title: '部署结果'
+        }];
+        $tb_deploy_app_history.bootstrapTable(mytable.getBootStrap());
+        //绑定查询按钮
+        $btn_query.click(function () {
+            $tb_deploy_app_history.bootstrapTable("refresh");
+        });
+    });
+</script>
+<%- include('../../footer.ejs') %>

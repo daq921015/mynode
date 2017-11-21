@@ -1,0 +1,163 @@
+<%- include('../header.ejs')%>
+<%- include('../menu.ejs')%>
+<%- include('../sidebar.ejs')%>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <label>使用说明</label>
+            <pre>
+一、前言：
+    1、	本程序内部访问地址：http://192.168.0.78  外网访问地址：https://ftrend.smartpos.top
+        默认账号：   用户名：个人姓名全拼	 密码：123456
+        账号初次登录后请修改登录密码，无法登录或没有账号的同事如有需要可联系管理员
+    2、	本文档是针对所有职员编写，不同人员账号权限不同，请有选择查看
+    3、	目前除了线上方象生产环境和奥家环境域名使用http协议，其它环境域名请求协议都是使用https，本地环境可以使用http协议ip方式请求（http://192.168.0.51/posapi）。
+    4、	所有环境的日志查询和数据库查询都在此网站（包括奥家）
+    5、	开发请在dev_41环境，测试请选用本地测试环境（test_51）
+二、各数据库说明
+    1)	saas-db: 商户信息区（商户基本资料及登录信息）
+    2)	goods-db:标准商品库
+    3)	rest-db:恵管家老区业务数据（门店、流水、出入库、会员、会员卡、商品资料等）
+    4)	retail-db:恵管家零售业务数据
+    5)	erp-store: 恵掌柜业务数据
+    6)	erp-chain:恵管家新区业务数据
+三、运维系统部分功能说明
+    1、	程序仪表盘
+        概述：统一查看各环境各程序tomcat运行情况，运行状态展示页面具有该程序其它操作的入口（程序部署、查看日志等）。
+        1)  运行状态：程序tomcat当前状态
+        2)  最后一次部署：当前程序的部署版本及其他部署信息
+        3)  操作：不同账号权限不同显示不同。
+            程序部署：从新部署一遍程序，替换之前的war包
+            启动：程序内容不变，启动tomcat
+            停止：程序内容不变，停止tomcat
+            重启：程序内容不变，重启tomcat
+            控制台日志：tomcat本身控制台日志，tomcat启动时查看日志判断启动是否完成
+            程序日志：程序运行过程中，由程序打出的log
+            部署历史：该程序历史部署更新信息
+            部署服务器：程序所部署物理机信息以及启动时的配置参数等
+    2、	程序日志
+         选中要查询环境以及查询程序，点击查询。当此页面首次载入时，默认开始时间为当前时间前2小时
+    3、	Mysql查询
+        1)  选择环境和查询数据库，输入查询sql执行查询，目前只支持 select开头的sql
+        2)  查询结果可以点击 export导出，可导出为excel/sql/json/txt。导出功能默认只导出当前页结果，如果查询结果不只一页可以调整每页显示量，如果还有分页请点击下一页逐页导出。
+        3)  sql查询支持选中文本查询。查询框中可以有多个select语句，选中本次要查询的sql点击查询。
+        4)  执行 按钮的快捷键为 F9 清空查询信息快捷键 alt+c
+    4、	部署历史
+        1)  通过部署历史，可以看到程序最近更新情况、更新人等，程序测试时出现错误，可根据此功能看看该程序是否本人更新而脚本、配置等没有执行
+        2)  部署历史查询默认查询时间：本月起止时间
+    5、	程序部署
+        1)  序部署前请选择环境、分组、程序、版本号、版本类型、目标服务器
+        2)  控件说明：
+            环境：同程序仪表盘描述
+            分组：当前部署程序所在的分组，比如erp-chain可在za1/zb1/zd1下部署
+            程序：选择部署程序名称
+            版本号：当前程序war包库里面存在的最近8个版本。倒序排列，2.7.14 会显示在2.7.2前面。
+            版本类型：基本准则:www_ali和beta_ali部署releases类型，其它环境部署snapshots类型
+            上传：上传最新war包。程序重新部署时一定要记得先上传最新war包
+            上传后自动部署：勾选此复选框后，war包上传后会自动触发部署脚本
+            目标服务器：程序部署前请先选择要部署的服务器。如果没有目标服务器可选择，则代表你选中的环境、分组、程序没有对应的物理机分配，若要部署请联系管理员分配物理机
+            清空输出：清空下面文本框中的所有内容。快捷键 Alt+c
+            部署程序：点击后会根据你选择的相关信息启动程序部署脚本。
+            显示war包：显示你选择的环境、程序下所有已经存在的war包，此功能可验证你要部署的war包是否已经上传。因为快照程序打包版本号允许重复，显示的war包请确认上传日期，是否符合最近打包时间。
+            控制台日志：功能和程序仪表盘“控制台日志”功能相同，显示tomcat控制台日志，查看启动状况
+            灰色不可编辑文本框：显示一些操作日志
+        3)  阿里云war包存储共用一套，本地环境war包存储共用一套。比如要部署test_ali  zd1-erp-chain程序，war包上传后 za1区的erp-chain以及beta上的erp-chain等该版本war包就无需再上传了
+
+四、开发程序说明
+   分组     程序名称       tomcat路径          内网调用示例（dev_41)                   外网调用示例（dev_41）
+    z0     eb-service       /bs	              tp://192.168.0.41/bs                   https://dev.smartpos.top/bs
+    z0     http-service     /out              http://192.168.0.41/out	             https://dev.smartpos.top/out
+    z0     job-service      /job              http://192.168.0.41/job	             https://dev.smartpos.top/job
+    z1     saas-portal      /portal           http://192.168.0.41/portal             https://dev.smartpos.top/portal
+    z1     saas-posapi      /posapi           http://192.168.0.41/posapi             https://dev.smartpos.top/posapi
+    z1     saas-appapi      /appapi           http://192.168.0.41/appapi             https://dev.smartpos.top/appapi
+    z2     saas-busines     /op	              http://192.168.0.41/op	             https://dev.smartpos.top/op
+    z3     goods-servic     /goods            http://192.168.0.41/goods	             https://dev.smartpos.top/goods
+    za1    erp-chain        /za1/erp          http://192.168.0.41/za1/erp            https://dev.smartpos.top/za1/erp
+    za1    o2o-wx           /ct               http://192.168.0.41/za1/ct             https://dev.smartpos.top/za1/ct
+    zb1    erp-chain        /zb1/erp          http://192.168.0.41/zb1/erp            https://dev.smartpos.top/zb1/erp
+    zc1    erp-store        /zc1/erp          http://192.168.0.41/zc1/erp            https://dev.smartpos.top/zc1/erp
+    zc1    pos-service      /zc1/pos          http://192.168.0.41/zc1/pos            https://dev.smartpos.top/zc1/pos
+    zd1    erp-chain        /zd1/erp          http://192.168.0.41/zd1/erp            https://dev.smartpos.top/zd1/erp
+    d1     o2o-wx           /zd1/ct           http://192.168.0.41/zd1/ct             https://dev.smartpos.top/zd1/ct
+五、环境及访问地址说明
+    1、	开发环境（dev_41）
+        1)  站入口：https://dev.smartpos.top
+        2)  pos/app入口：https://dev.smartpos.top/posapi
+        3)  程序本地调用地址：http://192.168.0.41/
+        4)  唯一数据库地址：
+                ip:192.168.0.40	 用户名：dev	密码：dev
+        5)  唯一redis地址：
+                ip:192.168.0.40	密码：ftrend
+        6)  app上传地址：https://dev.smartpos.top/admin
+                用户名：admin 	密码：nimda
+    2、	本地测试环境(test_51)
+        1)  站入口：https://check-local.smartpos.top
+        2)  pos/app入口：https://check-local.smartpos.top/posapi
+        3)  程序本地调用地址：http://192.168.0.51/
+        4)  数据库地址：
+                ip:192.168.0.50	 用户名：dev	密码：dev
+        5)  唯一redis地址：
+                ip:192.168.0.50	密码：ftrend
+        6)  app上传地址：https://check-local.smartpos.top/admin
+            用户名：admin 	密码：nimda
+    3、	阿里云测试环境（test_ali）
+        1)  站入口：https://check-local.smartpos.top
+        2)  pos/app入口：https://check-local.smartpos.top/posapi
+        3)  app上传地址：https://check-ali.smartpos.top/admin
+            用户名：admin 	密码：nimda
+    4、	阿里云beta环境（beta_ali）
+        1)  站入口：https://beta.smartpos.top
+        2)  pos/app入口：https://beta.smartpos.top/posapi
+    5、	阿里云生产环境（www_ali）(正式商户用此环境)
+        1)  站入口：http://www.smartpos.top
+        2)  恵管家餐饮pos入口：
+                老：http://posapi.smartpos.top/v2
+                新：http://posapi.smartpos.top/v3
+        3)  恵管家零售pos入口：
+                老：http://posapi2.smartpos.top/v2
+                新：http://posapi2.smartpos.top/v3
+        4)  慧掌柜pos入口：
+                http://posapi3.smartpos.top/v2
+        5)  APP入口：
+                http://www.smartpos.top/appapi
+        6)  数据采集（gateway）
+                115.28.252.50:50001/hzg-gateway
+                115.28.252.50:50002
+        7)  pos端上传日志
+                http://test.smartpos.top/gateway/log/console
+    6、	奥家阿里云生产环境（sanmi_www）
+        1)  站入口：http://www.sanmipos.com
+        2)  恵管家pos入口：
+             主（优先选择）：	http://pos1.sanmipos.com/v3
+             备：http://pos2.sanmipos.com/v3
+        3)  app入口：
+             http://www.sanmipos.com/appapi
+六、数据库部分表功能说明及常用功能查询sql示例
+    前言：
+        1)  户id和商户编号在 `saas-db`库tenant表中存储
+        2)  商户其它业务数据，请到对应的区业务数据库查询（商品资料、卡信息、会员资料）
+        3)  以下sql示例演示账号（餐饮老区za1）
+            商户id（tenant_id）:1726
+            商户编号(tenant_code)：61012009
+            后台登陆用户名：61012009
+            后台登陆电话：18563923257
+    1、 据后台登陆用户名查询商户id
+            select  tenant_id  from  s_user  where  login_name = '61012009'  and  is_deleted=0;
+    2、 根据后台登陆电话查询商户id
+            select  tenant_id  from  s_user  where  bind_mobile = '18563923257'  and  is_deleted=0;
+    3、 根据商户编号查询商户id及商户所属分区（餐饮老区za1、零售区zb1、慧掌柜zc1、餐饮新区zd1）
+            SELECT  id,partition_code  FROM  tenant  WHERE  CODE = '61012009'  and  is_deleted=0;
+    4、 根据商户id查询母卡或授权卡(首先要知道该商户属于哪个区)
+            根据type值判断code卡类型（code为卡编号）：type   1的为母卡，2的为授权卡，4的为会员卡
+            select  code,type  from  card  where  tenant_id=1726  and  is_deleted=0;
+    5、 根据商户id和会员电话查询会员信息
+            select  *  from  vip  where  tenant_id=1726  and  phone='15904033660'  and  is_deleted=0;
+            </pre>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).attr("title", "<%=typeof title == "string"?title:"首页"%>");
+</script>
+<%- include('../footer.ejs')%>

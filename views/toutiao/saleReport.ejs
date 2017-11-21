@@ -1,0 +1,330 @@
+<%- include('../header.ejs') %>
+<%- include('../menu.ejs') %>
+<%- include('../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">订单基础数据列表</div>
+        </div>
+    </div>
+    <form id="form_sale_report" role="form">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                        <button id="<%= operator[i]["label_id"] %>" type="button"
+                                class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                            <span class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                        </button>
+                        <% } %>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">创建时间</label>
+                        <div id='star_create_at' class='input-group date' style="width: 195px">
+                            <input name="start_create_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label ">至</label>
+                        <div id='end_create_at' class='input-group date' style="width: 195px">
+                            <input name="end_create_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">结算时间</label>
+                        <div id='start_balance_at' class='input-group date' style="width: 195px">
+                            <input name="start_balance_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">至</label>
+                        <div id='end_balance_at' class='input-group date' style="width: 195px">
+                            <input name="end_balance_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 5px;">
+            <div class="col-sm-12">
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <label class="control-label">商品id</label>
+                        <input name="goods_id" type="text" class="form-control" placeholder="商品id">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">订单号</label>
+                        <input name="order_no" type="text" class="form-control" placeholder="订单号">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">订单状态</label>
+                        <select name="order_status" class="selectpicker show-tick" multiple>
+                            <% for(var i = 0, j = order_status.length;i < j;i++){ %>
+                            <option value="<%= order_status[i]["order_status"] %>"> <%= order_status[i]["order_status"] %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">广告位</label>
+                        <select name="ad_name" class="selectpicker show-tick" multiple>
+                            <% for(var i = 0, j = ad_names.length;i < j;i++){ %>
+                            <option value="<%= ad_names[i]["ad_name"] %>"> <%= ad_names[i]["ad_name"] %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_sale_report"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+    //------------------获取页面元素--------------------------------
+    var $form_sale_report = $("#form_sale_report");//查询表单
+    var $tb_sale_report = $('#tb_sale_report');//表格
+    var $btn_query = $("#btn_query");//查询按钮
+    //表单控件
+    var $star_create_at = $("#star_create_at");
+    var $end_create_at = $("#end_create_at");
+    var $start_balance_at = $("#start_balance_at");
+    var $end_balance_at = $("#end_balance_at");
+    var $order_status = $form_sale_report.find("select[name='order_status']");
+    var $ad_name = $form_sale_report.find("select[name='ad_name']");
+    //----------------------END-------------------------------------
+    //------------------初始化时间控件、下拉控件--------------------
+    dateControlInit($star_create_at, null, getThisMonthArray()[0]);
+    dateControlInit($end_create_at, null, getThisMonthArray()[1]);
+    dateControlInit($start_balance_at);
+    dateControlInit($end_balance_at);
+    //设置下拉多选框
+    $order_status.selectpicker({
+        'selectedText': 'cat'
+    });
+    $ad_name.selectpicker({
+        'selectedText': 'cat'
+    });
+    //----------------------END-------------------------------------
+    //----------------------表格-------------------------------------
+    var mytable = new MyTable($tb_sale_report, $btn_query, $form_sale_report)
+    mytable.bootStrap.url = '/toutiao/saleReport/list';
+    mytable.bootStrap.sortName = "goods_expect_amount";
+    mytable.bootStrap.sortOrder = "desc";
+    mytable.bootStrap.columns = [
+        {
+            checkbox: true
+        }, {
+            halign: "center",
+            align: "center",
+            width: 360,
+            sortable: false,
+            field: 'goods_id',
+            title: '商品ID',
+            formatter: function (value, row, index) {
+                var link_html = "<a target= '_blank' href='https://item.taobao.com/item.htm?id=" + value + "'>" + value + "</a>";
+                return link_html;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'goods_info',
+            title: '商品信息'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'goods_category',
+            title: '商品类目'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'commission_perc',
+            title: '佣金比率'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_num',
+            title: '商品总数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_num", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'order_num',
+            title: '订单总数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "order_num", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_pay_amount',
+            title: '付款总金额',
+            formatter: function (value) {
+                return value.toFixed(2);
+            },
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_pay_amount", 2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_expect_amount',
+            title: '效果预估总金额',
+            formatter: function (value) {
+                return value.toFixed(2);
+            },
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_expect_amount", 2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_balance_amount',
+            title: '结算总金额',
+            formatter: function (value) {
+                return value.toFixed(2);
+            },
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_balance_amount", 2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_expect_income',
+            title: '预估收入总金额',
+            formatter: function (value) {
+                return value.toFixed(2);
+            },
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_expect_income", 2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_commission_amount',
+            title: '佣金总金额',
+            formatter: function (value) {
+                return value.toFixed(2);
+            },
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_commission_amount", 2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'goods_pension_amount',
+            title: '补贴总金额',
+            formatter: function (value) {
+                return value.toFixed(2);
+            },
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_pension_amount", 2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'goods_num_per',
+            title: '商品数/每单',
+            formatter: function (value, row, index) {
+                return (row["goods_num"] / row["order_num"]).toFixed(2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'pay_amount_per',
+            title: '付款金额/每单',
+            formatter: function (value, row, index) {
+                return (row["goods_pay_amount"] / row["order_num"]).toFixed(2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'expect_amount_per',
+            title: '效果预估/每单',
+            formatter: function (value, row, index) {
+                return (row["goods_expect_amount"] / row["order_num"]).toFixed(2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'balance_amount_per',
+            title: '结算金额/每单',
+            formatter: function (value, row, index) {
+                return (row["goods_balance_amount"] / row["order_num"]).toFixed(2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'expect_income_per',
+            title: '预估收入/每单',
+            formatter: function (value, row, index) {
+                return (row["goods_expect_income"] / row["order_num"]).toFixed(2);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'commission_amount_per',
+            title: '佣金金额/每单',
+            formatter: function (value, row, index) {
+                return (row["goods_commission_amount"] / row["order_num"]).toFixed(2);
+            }
+        }
+    ];
+    mytable.currentFormData = function () {
+        var condition = {}
+        var order_status_arr = $order_status.val();
+        if (order_status_arr instanceof Array) {
+            condition["order_status"] = order_status_arr.join(",");
+        }
+        var ad_name_arr = $ad_name.val();
+        if (ad_name_arr instanceof Array) {
+            condition["ad_name"] = ad_name_arr.join(",");
+        }
+        return condition;
+    };
+    $tb_sale_report.bootstrapTable(mytable.getBootStrap());
+    //----------------------END-------------------------------------
+    //注册查询
+    $btn_query.click(function () {
+        $tb_sale_report.bootstrapTable('destroy').bootstrapTable(mytable.getBootStrap());
+    });
+</script>
+<%- include('../footer.ejs') %>

@@ -1,0 +1,51 @@
+<% for (var i = 0, j = hosts.length;i < j;i++){ %>
+<% for (key in hosts[i]["process"]){ %>
+<%
+    var groupid = uuid(8, 2);;
+%>
+<tr id="<%= groupid %>" data-hostid="<%= hosts[i]["hostid"] %>" data-process="<%= key %>">
+    <td><%= hosts[i]["realhost"] %></td>
+    <td><%= hosts[i]["hostname"] %></td>
+    <td><%= key %></td>
+    <% if (hosts[i]["process"][key][0] === "RUNNING"){ %>
+    <td><span class="badge" style="background-color: green"><%= hosts[i]["process"][key][0] %></span></td>
+    <% }else{ %>
+    <td><span class="badge" style="background-color: red"><%= hosts[i]["process"][key][0] %></span></td>
+    <% } %>
+    <td><%= hosts[i]["process"][key][1] %></td>
+    <td>
+        <a  class="btn btn-xs btn-info pull-right" data-action="querypro">
+            <span class="btn-label"><i class="glyphicon glyphicon-file"></i></span>
+            <span class="btn-text">pro日志</span>
+        </a>
+        <a target="_blank" href="<%="/supervisor/supervisorctl?action=querytom&execprocess="+key+"&hostid="+hosts[i]["hostid"]%>" class="btn btn-xs btn-info pull-right" data-action="querytom" style="margin-right: 5px">
+            <span class="btn-label"><i class="glyphicon glyphicon-file"></i></span>
+            <span class="btn-text">tom日志</span>
+        </a>
+        <button class="btn btn-xs btn-danger pull-right" data-action="stop" style="margin-right: 5px">
+            <span class="btn-label"><i class="glyphicon glyphicon-stop"></i></span>
+            <span class="btn-text">停止</span>
+        </button>
+        <button class="btn btn-xs btn-success pull-right" data-action="start" style="margin-right: 5px">
+            <span class="btn-label"><i class="glyphicon glyphicon-play"></i></span>
+            <span class="btn-text">启动</span>
+        </button>
+    </td>
+</tr>
+<script type="text/javascript">
+    function hostButtonInit() {
+        var buttons = $("<%= "#"+groupid %>").find("button");
+        for (var i = 0, j = buttons.length; i < j; i++) {
+            $(buttons[i]).on("click", function () {
+                var action = $(this).attr("data-action");
+                var hostid = $(this).parents("tr").attr("data-hostid");
+                var process = $(this).parents("tr").attr("data-process");
+                var operator = {"action": action, "hostid": hostid, "process": process};
+                singleService(this, operator);
+            });
+        }
+    }
+    hostButtonInit();
+</script>
+<% } %>
+<% } %>

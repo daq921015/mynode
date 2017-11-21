@@ -1,0 +1,97 @@
+<div class="container-fluid">
+    <form id="form_tomcat_auth_add" class="form-horizontal" role="form">
+        <div class="form-group">
+            <label class="control-label col-sm-3">用户</label>
+            <div class="col-sm-7">
+                <select name="user_id" class="form-control ">
+                    <% for (var i = 0, j = users.length;i < j;i++) { %>
+                    <option value="<%= users[i]["id"] %>"><%= users[i]["user_name"] %></option>
+                    <% } %>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3">环境</label>
+            <div class="col-sm-7">
+                <select name="env_name" class="form-control">
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3">分组</label>
+            <div class="col-sm-7">
+                <select name="group_name" class="form-control">
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3">程序</label>
+            <div class="col-sm-7">
+                <select name="program_name" class="form-control">
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3">权限编号</label>
+            <div class="col-sm-7">
+                <select name="privilege_code" class="form-control ">
+                    <% for (var i = 0, j = privileges.length;i < j;i++) { %>
+                    <option value="<%= privileges[i]["privilege_code"] %>"><%= privileges[i]["privilege_name"] %></option>
+                    <% } %>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-3">备注</label>
+            <div class="col-sm-7">
+                <input name="memo" type="text" class="form-control" placeholder="备注">
+            </div>
+        </div>
+        <div class="form-group" style="float: right">
+            <button id="btn_tomcat_auth_add" type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+            <button type="button" class="btn btn-primary ok" data-dismiss="modal">取消</button>
+        </div>
+    </form>
+</div>
+<script>
+    //------------------获取页面元素--------------------------------
+    var $form_tomcat_auth_add = $("#form_tomcat_auth_add");//表单
+    var $btn_tomcat_auth_add = $("#btn_tomcat_auth_add");//提交按钮
+    //select change
+    var $env_name = $form_tomcat_auth_add.find('select[name="env_name"]');
+    var $group_name = $form_tomcat_auth_add.find('select[name="group_name"]');
+    var $program_name = $form_tomcat_auth_add.find("select[name='program_name']");
+    //----------------------END-------------------------------------
+    //-----------------监控下拉框变化,注册事件----------------------
+    <%- include('../initTomcatDropDownBoxAdd.ejs') %>
+    //----------------------END-------------------------------------
+    //------------------表单验证及提交------------------------------
+    //表单提交
+    $btn_tomcat_auth_add.click(function (err, result) {
+        var url = "/tomcat/tomcatAuth/add";
+        var form_data = new FormData($form_tomcat_auth_add[0]);
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.msg);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                $("#tb_tomcat_auth").bootstrapTable("refresh");
+            }
+        });
+    });
+    //----------------------END-------------------------------------
+</script>

@@ -1,0 +1,50 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <ul id="env_name" class="nav nav-tabs">
+                <% for (var i = 0, j = envs.length;i < j;i++){ %>
+                <li><a href="#" data-value="<%= envs[i] %>" data-toggle="tab"><%= envs[i] %></a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px;">
+        <div class="col-sm-7">
+            <%- include('./appUpload.ejs') %>
+        </div>
+        <div class="col-sm-5">
+            <%- include('./appList.ejs') %>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_app_list"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //页title
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $tabs = $('a[data-toggle="tab"]');//环境选项卡
+        //----------------------END-------------------------------------
+        //------------------注册页面元素--------------------------------
+        //不同环境显示不同的功能选择
+        //选项卡更换,绑定点击事件
+        $tabs.on("click", function (e) {
+            var $that = $(this);
+            $tabs.css("background-color", "");
+            $that.css("background-color", "#99FFFF");
+        });
+        //默认选中第一个
+        if (typeof $tabs[0]) {
+            $tabs[0].click();
+        }
+        //----------------------END-------------------------------------
+    });
+</script>
+<%- include('../../footer.ejs') %>

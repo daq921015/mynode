@@ -1,0 +1,83 @@
+<!--门店绑定版本号弹窗-->
+<div id="model_app_bind" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"> &times;</button>
+                <h4 class="modal-title"> 门店版本号绑定 </h4>
+            </div>
+            <div class="modal-body">
+                <form id="form_app_bind" class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">平台</label>
+                        <div class="col-sm-9">
+                            <select name="app_type" class="form-control">
+                                <option value="1">恵管家（Android）</option>
+                                <option value="2">恵管家（Windows）</option>
+                                <option value="5">恵掌柜（Android）</option>
+                                <option value="6">恵掌柜（Windows）</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">业态</label>
+                        <div class="col-sm-9">
+                            <select name="app_business" class="form-control">
+                                <option value="1">餐饮</option>
+                                <option value="2">零售</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-2 control-label">版本号</label>
+                        <div class="col-sm-9">
+                            <input name="version_no" type="text" class="form-control" placeholder="置空则清空版本号">
+                        </div>
+                        <span class="star">*</span>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                <button id="btn_app_bind" type="button" data-value='4' class="btn btn-primary" data-dismiss="modal">
+                    开始绑定
+                </button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal -->
+</div>
+<!--门店清除版本号确认弹窗-->
+<div id="model_app_unbind" class="modal fade" role="dialog" aria-labelledby="modalLabel">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"> &times;</button>
+                <h4 class="modal-title">清除门店版本号</h4>
+            </div>
+            <div class="modal-body">
+                <p>确认清除门店指定的版本号？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+                <button id="btn_app_unbind" type="button" class="btn btn-primary ok" data-value='5'
+                        data-dismiss="modal"> 开始清除
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-4">
+        <%- include('./updateTenantApp.ejs') %>
+    </div>
+    <div class="col-sm-4">
+        <%- include('./searchTenantApp.ejs') %>
+    </div>
+    <div class="col-sm-3">
+        <%- include('./searchAppInfo.ejs') %>
+    </div>
+</div>
+<div class="row">
+    <table id="tb_app">
+    </table>
+</div>

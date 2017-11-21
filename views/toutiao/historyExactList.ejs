@@ -1,0 +1,306 @@
+<%- include('../header.ejs') %>
+<%- include('../menu.ejs') %>
+<%- include('../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">精确数据采集分析</div>
+        </div>
+    </div>
+    <form id="form_history_exact" role="form">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                        <button id="<%= operator[i]["label_id"] %>" type="button"
+                                class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                            <span class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                        </button>
+                        <% } %>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">上线时间</label>
+                        <div id='start_create_time' class='input-group date' style="width: 195px">
+                            <input name="start_create_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label ">至</label>
+                        <div id='end_create_time' class='input-group date' style="width: 195px">
+                            <input name="end_create_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <ul class="nav navbar-nav col-sm-12">
+                            <li class="dropdown">
+                                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    工具
+                                    <b class="caret"></b>
+                                </button>
+                                <ul id="time_tools" class="dropdown-menu">
+                                    <li><a href="#" data-value="today">今天</a></li>
+                                    <li><a href="#" data-value="yesterday">昨天</a></li>
+                                    <li><a href="#" data-value="this_week">本周</a></li>
+                                    <li><a href="#" data-value="last_week">上周</a></li>
+                                    <li><a href="#" data-value="this_month">本月</a></li>
+                                    <li><a href="#" data-value="last_month">上月</a></li>
+                                    <li><a href="#" data-value="last_30">最近30天</a></li>
+                                    <li><a href="#" data-value="last_60">最近60天</a></li>
+                                    <li><a href="#" data-value="last_90">最近90天</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">商品点击数</label>
+                        <input name="goods_clicks" type="text" class="form-control" placeholder="商品点击数">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 5px">
+            <div class="col-sm-12">
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <label class="control-label">标题</label>
+                        <input name="name" type="text" class="form-control" placeholder="标题">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">作者</label>
+                        <input name="article_author" type="text" class="form-control" placeholder="作者">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">阅读数</label>
+                        <input name="read_count" type="text" class="form-control" placeholder="阅读数">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">频道</label>
+                        <select name="channel" class="selectpicker show-tick" multiple>
+                            <% for(var i = 0, j = channels.length;i < j;i++){ %>
+                            <option value="<%= channels[i]["channel"] %>"> <%= channels[i]["channel"] %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">头条号</label>
+                        <select name="toutiao_number" class="selectpicker show-tick" multiple>
+                            <% for(var i = 0, j = toutiao_numbers.length;i < j;i++){ %>
+                            <option value="<%= toutiao_numbers[i]["toutiao_number"] %>"> <%= toutiao_numbers[i]["toutiao_number"] %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_history_exact"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $form_history_exact = $("#form_history_exact");//查询表单
+        var $tb_history_exact = $('#tb_history_exact');//表格
+        var $btn_query = $("#btn_query");//查询按钮
+        //表单内容
+        var $channel = $form_history_exact.find("select[name='channel']");
+        var $toutiao_number = $form_history_exact.find("select[name='toutiao_number']");
+        var $start_create_time = $("#start_create_time");
+        var $end_create_time = $("#end_create_time");
+        //----------------------END-------------------------------------
+        //----------------初始化时间控件、下拉控件-----------------------
+        dateControlInit($start_create_time, null, getThisMonthArray()[0]);
+        dateControlInit($end_create_time, null, getThisMonthArray()[1]);
+        //设置下拉多选框
+        $channel.selectpicker({
+            'selectedText': 'cat'
+        });
+        $toutiao_number.selectpicker({
+            'selectedText': 'cat'
+        });
+        //注册时间工具按钮
+        var time_tools = $("#time_tools a");
+        $(time_tools).on("click", function () {
+            var action = $(this).attr("data-value");
+            var timeTools = mytable.timeTools(action);
+            $start_create_time.find("input").val(timeTools[0]);
+            $end_create_time.find("input").val(timeTools[1]);
+        });
+        //----------------------END-------------------------------------
+        //----------------------表格-------------------------------------
+        var mytable = new MyTable($tb_history_exact, $btn_query, $form_history_exact);
+        mytable.bootStrap.url = '/toutiao/historyExactAnalysis/list';
+        mytable.bootStrap.sortName = "read_count";
+        mytable.bootStrap.sortOrder = "desc";
+        mytable.bootStrap.columns = [{
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'name',
+            title: '标题',
+            order: "asc"
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'channel',
+            title: '频道'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'toutiao_number',
+            title: '头条号'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'article_author',
+            title: '作者'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'type',
+            title: '类型'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'create_time',
+            title: '上线时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'recommend_count',
+            title: '推荐数'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'read_count',
+            title: '阅读数'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'read_percent',
+            title: '阅读率'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_clicks',
+            title: '商品点击数'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'goods_clicks_percent',
+            title: '商品点击率'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'dislike_count',
+            title: 'dislike数'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: true,
+            field: 'dislike_count_percent',
+            title: 'dislike率'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'link',
+            title: '链接',
+            formatter: function (value, row, index) {
+                var article_id_array = value.match(/id\s*=\s*(\d*)\s*$/);
+                var re_value = "";
+                if (article_id_array == null || typeof article_id_array == "undefined" || article_id_array.length !== 2) {
+                    re_value = "<a target= '_blank' href='" + value + "'>" + value + "</a>";
+                    return re_value;
+                }
+                re_value = "<a target= '_blank' href='https://temai.snssdk.com/article/feed/index?id=" + article_id_array[1] + "'>https://temai.snssdk.com/article/feed/index?id=" + article_id_array[1] + "</a>";
+                return re_value;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'hour',
+            title: '小时'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'week',
+            title: '星期'
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'create_at',
+            title: '导入时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            sortable: false,
+            field: 'memo',
+            title: '备注'
+        }];
+        mytable.currentFormData = function () {
+            var condition = {}
+            var channel_arr = $channel.val();
+            if (channel_arr instanceof Array) {
+                condition["channel"] = channel_arr.join(",");
+            }
+            var toutiao_number_arr = $toutiao_number.val();
+            if (toutiao_number_arr instanceof Array) {
+                condition["toutiao_number"] = toutiao_number_arr.join(",");
+            }
+            return condition;
+        };
+        $tb_history_exact.bootstrapTable(mytable.getBootStrap());
+        //注册工具按钮
+        <% for(var i = 0, j = operator.length;i < j;i++){ %>
+        <% if(operator[i]["label_id"] == "btn_import"){ %>
+        //注册导入按钮
+        $("#btn_import").click(function () {
+            mytable.addData("<%= operator[i]["res_url"] %>", "导入精确数据");
+        });
+        <% } %>
+        <% } %>
+        //----------------------END-------------------------------------
+        //------------------表格参数初始化及事件监听--------------------
+        //注册查询
+        $btn_query.click(function () {
+            $tb_history_exact.bootstrapTable('destroy').bootstrapTable(mytable.getBootStrap());
+        });
+        //----------------------END-------------------------------------
+    });
+</script>
+<%- include('../footer.ejs') %>

@@ -1,0 +1,176 @@
+<div class="row">
+    <label class="col-sm-12">指定恵管家商户所有门店app版本号(修改记录存入日志)</label>
+</div>
+<div class="row">
+    <form id="form_tenant_edit" class="form-horizontal  col-sm-11" role="form">
+        <div class="form-group">
+            <label class="col-sm-3 control-label">平台</label>
+            <div class="col-sm-8">
+                <select name="app_type" class="form-control">
+                    <option value="1">恵管家（Android）</option>
+                    <option value="2">恵管家（Windows）</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">业态</label>
+            <div class="col-sm-8">
+                <select name="app_business" class="form-control">
+                    <option value="1">餐饮</option>
+                    <option value="2">零售</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">商户信息</label>
+            <div class="col-sm-8">
+                <input name="tenant_code" type="text" class="form-control" placeholder="登录名、手机号、商户id">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label">版本号</label>
+            <div class="col-sm-8">
+                <input name="version_no" type="text" class="form-control" placeholder="置空则清除所有门店版本号">
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <input id="btn_tenant_edit" type="button" data-value="1" class="btn btn-default" value="修改"/>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    $(function () {
+        //------------------获取页面元素--------------------------------
+        var $form_app_bind = $("#form_app_bind");//修改单个门店版本号
+        var $form_tenant_edit = $("#form_tenant_edit");//修改商户所有门店版本号
+        var $btn_tenant_edit = $("#btn_tenant_edit");//修改商户功能提交
+        var $btn_tenant_search = $("#btn_tenant_search");//查询商户版本号提交
+        var $btn_app_bind = $("#btn_app_bind");//绑定单个门店
+        var $btn_app_unbind = $("#btn_app_unbind");//清除单个门店
+        var $tb_app = $("#tb_app");//结果显示表格
+
+        var $env_name = $("#env_name");//环境选择
+        var $func_type = $("#func_type");//功能选择
+        //公共变量
+        var env_name = $env_name.find("li.active a").data("value");
+        var func_type = $func_type.find("option:selected").val();
+        //----------------------END-------------------------------------
+        //修改商户所有门店版本号
+        $btn_tenant_edit.click(function () {
+            //整理表单数据
+            var formData = new FormData($form_tenant_edit[0]);
+            var exec_type = $(this).data("value");
+            formData.append("env_name", env_name);
+            formData.append("func_type", func_type);
+            formData.append("exec_type", exec_type);
+            var url = "/tomcat/tenantSet/operatorTenantSet"
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                async: true,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    var _obj = JSON.parse(data);
+                    if (_obj.status === "success") {
+                        toastr.info(_obj.data);
+                    } else {
+                        toastr.warning(_obj.msg);
+                    }
+                },
+                error: function (data) {
+                    toastr.warning('内部服务器错误');
+                },
+                complete: function () {
+                    $btn_tenant_search.click();
+                }
+            });
+        });
+        //修改单个门店版本号
+        $btn_app_bind.click(function () {
+            //整理表单数据
+            var formData = new FormData($form_app_bind[0]);
+            var exec_type = $(this).data("value");
+            formData.append("env_name", env_name);
+            formData.append("func_type", func_type);
+            formData.append("exec_type", exec_type);
+            var arrselections = $tb_app.bootstrapTable('getSelections');
+            if (arrselections.length === 0) {
+                toastr.warning("请先选中修改门店");
+                return;
+            }
+            var _arr = _.pick(arrselections[0], "branch_id", "partition_code");
+            for (var key in _arr) {
+                formData.append(key, _arr[key]);
+            }
+            var url = "/tomcat/tenantSet/operatorTenantSet"
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                async: true,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    var _obj = JSON.parse(data);
+                    if (_obj.status === "success") {
+                        toastr.info(_obj.data);
+                    } else {
+                        toastr.warning(_obj.msg);
+                    }
+                },
+                error: function (data) {
+                    toastr.warning('内部服务器错误');
+                },
+                complete: function () {
+                    $btn_tenant_search.click();
+                }
+            });
+        });
+        //清除单个门店版本号
+        $btn_app_unbind.click(function () {
+            //整理表单数据
+            var formData = new FormData();
+            var exec_type = $(this).data("value");
+            formData.append("env_name", env_name);
+            formData.append("func_type", func_type);
+            formData.append("exec_type", exec_type);
+            var arrselections = $tb_app.bootstrapTable('getSelections');
+            if (arrselections.length === 0) {
+                toastr.warning("请先选中修改门店");
+                return;
+            }
+            var _arr = _.pick(arrselections[0], "branch_id", "partition_code");
+            for (var key in _arr) {
+                formData.append(key, _arr[key]);
+            }
+            var url = "/tomcat/tenantSet/operatorTenantSet"
+            $.ajax({
+                url: url,
+                type: 'POST',
+                data: formData,
+                async: true,
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    var _obj = JSON.parse(data);
+                    if (_obj.status === "success") {
+                        toastr.info(_obj.data);
+                    } else {
+                        toastr.warning(_obj.msg);
+                    }
+                },
+                error: function (data) {
+                    toastr.warning('内部服务器错误');
+                },
+                complete: function () {
+                    $btn_tenant_search.click();
+                }
+            });
+        });
+    });
+</script>

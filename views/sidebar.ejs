@@ -1,0 +1,74 @@
+<% if(typeof session.islogin !== "undefined"){ %>
+<div id="sidebar" class="page-nav ">
+    <ul class="nav-list">
+        <% var count = 0; %>
+        <% for(var key in menu[0]){ %>
+        <!--设置主菜单-->
+        <li class="nav-item <%= typeof menu[1][key] !== 'undefined' ? 'with-sub-menu' : '' %> ">
+            <a data-res-id="<%= key %>" href="<%= menu[0][key]["res_url"] + "&_=" + Date.now() %>" class="nav-link">
+                <% if(count == 0){ %>
+                <i class="glyphicon glyphicon-home"></i>
+                <% }else{ %>
+                <i class="glyphicon glyphicon-user"></i>
+                <% } %>
+                <% count = count + 1 %>
+                <span><%= menu[0][key]["res_name"] %></span>
+                <% if(typeof menu[1][key] !== 'undefined'){ %>
+                <b class="glyphicon glyphicon-menu-down"></b>
+                <% } %>
+            </a>
+        </li>
+        <!--设置子菜单-->
+        <% if(typeof menu[1][key] !== "undefined"){ %>
+        <ul class="nav-sub-list "
+            style="display: none">
+            <% for(var i = 0, j = menu[1][key].length;i < j;i++){ %>
+            <li class="nav-item">
+                <a data-res-id="<%= menu[1][key][i]["res_id"] %>"
+                   href="<%= menu[1][key][i]["res_url"] + "&_=" + Date.now() %>"
+                   class="nav-link"><span><%= menu[1][key][i]["res_name"] %></span>
+                </a>
+            </li>
+            <% } %>
+        </ul>
+        <% } %>
+        <% } %>
+    </ul>
+    <script>
+        //加载页面菜单栏默认选中项
+        var res_id = "<%=resTag%>";
+        var $a = $("a");
+        $a.each(function (i, element) {
+            var $element = $(element);
+            if ($element.data("resId") == res_id) {
+                var parents = ($element.parents("ul.nav-sub-list"));
+                //有父菜单
+                if (parents.length == 1) {
+                    $(parents).css("display", "block");
+                    $(parents).prev("li.nav-item").addClass("expanded");
+                }
+                $($element.parent()).addClass("selected");
+            }
+        });
+        //侧边栏打开关闭主菜单下子菜单
+        var $navList = $('.page-nav').find('li.nav-item');
+        $navList.on('click', function (e) {
+            var $this = $(this);
+            if ($this.hasClass('with-sub-menu')) {
+                $navList.not(this).each(function (i, element) {
+                    var $element = $(element);
+                    $element.removeClass('expanded');
+                    var $next = $element.next('ul')
+                    if ($next.css("display") == "block") {
+                        $next.slideToggle(300);
+                    }
+                });
+                $this.toggleClass('expanded');
+                $this.next("ul").slideToggle(300);
+            }
+        });
+    </script>
+</div>
+<div id="page_content" class="page-content">
+    <div id="mainDiv">
+<% } %>

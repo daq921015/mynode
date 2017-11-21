@@ -1,0 +1,98 @@
+<div class="row">
+    <div class="col-sm-12">
+        <form id="form_program_name" class="form-inline" role="form">
+            <div class="form-group">
+                <input name="program_name" type="text" class="form-control" placeholder="程序名称">
+                <input style="display: none">
+                <input id="btn_program_name" type="button" data-value='9' class="btn btn-primary" value="查询">
+            </div>
+            <div class="form-group pull-right">
+                <input id="btn_confirm" type="button" data-value='9' class="btn btn-success" value="选择">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="tb_program_name"></table>
+    </div>
+</div>
+<script>
+    $(function () {
+        //------------------获取页面元素--------------------------------
+        var $form_program_name = $("#form_program_name");//程序表单
+        var $btn_program_name = $("#btn_program_name");//程序查询
+        var $tb_program_name = $("#tb_program_name");//程序表格
+        var $env_name = $("#env_name");
+        var $btn_confirm = $("#btn_confirm");
+        //----------------------END-------------------------------------
+        //----------------------表格------------------------------------
+        var mytable = new MyTable($tb_program_name, $btn_program_name, $form_program_name);
+        mytable.bootStrap.url = "/tomcat/appUpload/appUploadOperator";
+        mytable.bootStrap.columns = [{
+            checkbox: true
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'path_name',
+            title: '程序路径名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'file_crate_time',
+            title: '构建时间'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'file_size',
+            title: '程序大小'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'operator',
+            title: '操作',
+            formatter: function (value, row, index) {
+                var _result = "";
+                var path_name = row["path_name"];
+                _result = _result + '<input name="btn_operator_pro" type="button" ' +
+                    'data-path-name="' + path_name + '" ' +
+                    'data-value="10" ' +
+                    'class="btn btn-default btn-sm" value="下载">';
+                return _result;
+            }
+        }];
+        mytable.currentFormData = function () {
+            var env_name = $env_name.find("li.active a").data("value");
+            var operator = $btn_program_name.data("value");
+            return {
+                env_name: env_name,
+                operator: operator
+            }
+        };
+        //----------------------END-------------------------------------
+        //---------------------注册事件---------------------------------
+        $tb_program_name.bootstrapTable(mytable.getBootStrap({height: 600}));
+        $btn_program_name.click(function () {
+            $tb_program_name.bootstrapTable(mytable.getBootStrap({height: 600}));
+        });
+        $btn_confirm.click(function () {
+            var arrselections = $tb_program_name.bootstrapTable('getSelections');
+            if (arrselections.length <= 0) {
+                toastr.warning('请先选择数据，然后再点击确认');
+                return;
+            }
+            var path_name = arrselections[0]["path_name"];
+            $("input[name='auto_path_name']").val(path_name);
+            $('div[id^="mdl"]').modal('hide');
+        });
+        //----------------------END-------------------------------------
+    });
+</script>

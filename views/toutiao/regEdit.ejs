@@ -1,0 +1,67 @@
+<div class="container-fluid">
+    <form id="form_reg_edit" class="form-horizontal" role="form">
+        <div class="form-group" style="display: none">
+            <label class="control-label col-sm-2">ID</label>
+            <div class="col-sm-9">
+                <input name="edit_id" type="text" class="form-control" placeholder="句式id" value="<%= editData["id"] %>">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">句式名称</label>
+            <div class="col-sm-9">
+                <input name="reg_info" type="text" class="form-control" value="<%= editData["reg_info"] %>">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">句式来源</label>
+            <div class="col-sm-9">
+                <select name="is_official" class="form-control">
+                    <option value="0" <%= editData["is_official"] == 0 ? "selected" : "" %>>官方</option>
+                    <option value="1" <%= editData["is_official"] == 1 ? "selected" : "" %>>自己组织</option>
+                </select>
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">备注</label>
+            <div class="col-sm-9">
+                <input name="memo" type="text" class="form-control" value="<%= editData["memo"] %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <button id="btn_reg_edit" type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+            <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+        </div>
+    </form>
+</div>
+<script>
+    //表单提交
+    $("#btn_reg_edit").click(function () {
+        var url = "/toutiao/headlineReg/edit";
+        var form_data = new FormData($("#form_reg_edit")[0]);
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.msg)
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                $("#tb_reg").bootstrapTable("refresh");
+            }
+        });
+    });
+</script>

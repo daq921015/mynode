@@ -1,0 +1,858 @@
+<%- include('../header.ejs') %>
+<%- include('../menu.ejs') %>
+<%- include('../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div id="report_type" class="col-sm-5">
+            <ul class="nav nav-tabs">
+                <li><a href="#" data-value="0" data-toggle="tab">作者报表</a></li>
+                <li><a href="#" data-value="1" data-toggle="tab">领域报表</a></li>
+                <li><a href="#" data-value="2" data-toggle="tab">领域星期报表</a></li>
+                <li><a href="#" data-value="3" data-toggle="tab">领域小时报表</a></li>
+            </ul>
+        </div>
+    </div>
+    <form id="form_history_exact_report" role="form">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                        <button id="<%= operator[i]["label_id"] %>" type="button"
+                                class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                            <span class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                        </button>
+                        <% } %>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">上线时间</label>
+                        <div id='start_create_time' class='input-group date' style="width: 195px">
+                            <input name="start_create_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label ">至</label>
+                        <div id='end_create_time' class='input-group date' style="width: 195px">
+                            <input name="end_create_time" type='text' class="form-control"/>
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <ul class="nav navbar-nav col-sm-12">
+                            <li class="dropdown">
+                                <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                    工具
+                                    <b class="caret"></b>
+                                </button>
+                                <ul id="time_tools" class="dropdown-menu">
+                                    <li><a href="#" data-value="today">今天</a></li>
+                                    <li><a href="#" data-value="yesterday">昨天</a></li>
+                                    <li><a href="#" data-value="this_week">本周</a></li>
+                                    <li><a href="#" data-value="last_week">上周</a></li>
+                                    <li><a href="#" data-value="this_month">本月</a></li>
+                                    <li><a href="#" data-value="last_month">上月</a></li>
+                                    <li><a href="#" data-value="last_30">最近30天</a></li>
+                                    <li><a href="#" data-value="last_60">最近60天</a></li>
+                                    <li><a href="#" data-value="last_90">最近90天</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">商品点击数</label>
+                        <input name="goods_clicks" type="text" class="form-control" placeholder="商品点击数">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">作者文章数</label>
+                        <input name="article_count" type="text" class="form-control" placeholder="作者文章数">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="margin-top: 5px">
+            <div class="col-sm-12">
+                <div class="form-inline" role="form">
+                    <div class="form-group">
+                        <label class="control-label">标题</label>
+                        <input name="name" type="text" class="form-control" placeholder="标题">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">作者</label>
+                        <input name="article_author" type="text" class="form-control" placeholder="作者">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">阅读数</label>
+                        <input name="read_count" type="text" class="form-control" placeholder="阅读数">
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">频道</label>
+                        <select name="channel" class="selectpicker show-tick" multiple>
+                            <% for(var i = 0, j = channels.length;i < j;i++){ %>
+                            <option value="<%= channels[i]["channel"] %>"> <%= channels[i]["channel"] %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label">头条号</label>
+                        <select name="toutiao_number" class="selectpicker show-tick" multiple>
+                            <% for(var i = 0, j = toutiao_numbers.length;i < j;i++){ %>
+                            <option value="<%= toutiao_numbers[i]["toutiao_number"] %>"> <%= toutiao_numbers[i]["toutiao_number"] %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_history_exact_report"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $report_type = $("#report_type");//报表类型
+        var $form_history_exact_report = $("#form_history_exact_report");//查询表单
+        var $tb_history_exact_report = $('#tb_history_exact_report');//表格
+        var $btn_query = $("#btn_query");//查询按钮
+        //表单内容
+        var $channel = $form_history_exact_report.find("select[name='channel']");
+        var $toutiao_number = $form_history_exact_report.find("select[name='toutiao_number']");
+        var $article_count = $form_history_exact_report.find("input[name='article_count']");
+        var $start_create_time = $("#start_create_time");
+        var $end_create_time = $("#end_create_time");
+        //报表选项卡
+        var $tabs = $('a[data-toggle="tab"]');
+        //----------------------END-------------------------------------
+        //----------------初始化时间控件、下拉控件-----------------------
+        dateControlInit($start_create_time, null, getThisMonthArray()[0]);
+        dateControlInit($end_create_time, null, getThisMonthArray()[1]);
+        //设置下拉多选框
+        $channel.selectpicker({
+            'selectedText': 'cat'
+        });
+        $toutiao_number.selectpicker({
+            'selectedText': 'cat'
+        });
+        //注册时间工具按钮
+        var time_tools = $("#time_tools a");
+        $(time_tools).on("click", function () {
+            var action = $(this).attr("data-value");
+            var timeTools = mytable.timeTools(action);
+            $start_create_time.find("input").val(timeTools[0]);
+            $end_create_time.find("input").val(timeTools[1]);
+        });
+        //选项卡更换,绑定点击事件
+        $tabs.on("click", function (e) {
+            var $that = $(this);
+            $tabs.css("background-color", "");
+            $that.css("background-color", "#99FFFF");
+            report_type = $that.attr("data-value");
+            if (report_type === "0") {
+                $article_count.parent().show();
+            } else {
+                $article_count.parent().hide();
+            }
+            $btn_query.click();
+        });
+        //----------------------END-------------------------------------
+        //----------------------表格------------------------------------
+        var mytable = new MyTable($tb_history_exact_report, $btn_query, $form_history_exact_report);
+        mytable.bootStrap.url = '/toutiao/historyExactReport/list';
+        mytable.bootStrap.sortName = "read_count_sum";
+        mytable.bootStrap.sortOrder = "desc";
+        mytable.bootStrap.pageList = [19, 50, 100, 200];
+        mytable.bootStrap.showFooter = true;
+        var report_type = 0;
+        mytable.currentFormData = function () {
+            var condition = {}
+            var channel_arr = $channel.val();
+            if (channel_arr instanceof Array) {
+                condition["channel"] = channel_arr.join(",");
+            }
+            var toutiao_number_arr = $toutiao_number.val();
+            if (toutiao_number_arr instanceof Array) {
+                condition["toutiao_number"] = toutiao_number_arr.join(",");
+            }
+            condition["report_type"] = report_type;
+            return condition;
+        };
+        var myColumns = [];
+        //作者报表列数据
+        var columns1 = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'article_author',
+            title: '作者'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'recommend_count_sum',
+            title: '总推荐数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "recommend_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'read_count_sum',
+            title: '总阅读数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "read_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'goods_clicks_sum',
+            title: '总商品点击数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_clicks_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'article_count_sum',
+            title: '文章总数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "article_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'atlas_sum',
+            title: '图集数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "atlas_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'special_sum',
+            title: '专辑数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "special_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_le_five',
+            title: '0~5万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_le_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_five',
+            title: '5~10万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_ten',
+            title: '10~30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_thr_ten',
+            title: '>30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_thr_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'recommend_count_per',
+            title: '平均推荐数',
+            formatter: function (value, row, index) {
+                return Math.round(row["recommend_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'read_count_per',
+            title: '平均阅读数',
+            formatter: function (value, row, index) {
+                return Math.round(row["read_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'goods_clicks_per',
+            title: '平均商品点击数',
+            formatter: function (value, row, index) {
+                return Math.round(row["goods_clicks_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'stylish_man_article',
+            title: '型男塑造师'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'living_article',
+            title: '居家巧匠'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'outdoors_article',
+            title: '户外行者'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'digital_pro_article',
+            title: '数码极客'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'entertainment_article',
+            title: '文娱先锋'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'fashion_article',
+            title: '时尚车主'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'mom_baby_article',
+            title: '母婴达人'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tide_girl_article',
+            title: '潮女搭配师'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'beauty_pro_article',
+            title: '美妆老师'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'delicacy_article',
+            title: '美食专家'
+        }];
+        //领域报表列数据
+        var columns2 = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'channel',
+            title: '频道',
+            order: "asc"
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'recommend_count_sum',
+            title: '总推荐数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "recommend_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'read_count_sum',
+            title: '总阅读数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "read_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'goods_clicks_sum',
+            title: '总商品点击数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_clicks_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'article_count_sum',
+            title: '文章总数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "article_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'atlas_sum',
+            title: '图集数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "atlas_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'special_sum',
+            title: '专辑数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "special_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_le_five',
+            title: '0~5万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_le_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_five',
+            title: '5~10万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_ten',
+            title: '10~30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_thr_ten',
+            title: '>30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_thr_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'recommend_count_per',
+            title: '平均推荐数',
+            formatter: function (value, row, index) {
+                return Math.round(row["recommend_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'read_count_per',
+            title: '平均阅读数',
+            formatter: function (value, row, index) {
+                return Math.round(row["read_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'goods_clicks_per',
+            title: '平均商品点击数',
+            formatter: function (value, row, index) {
+                return Math.round(row["goods_clicks_sum"] / row["article_count_sum"]);
+            }
+        }];
+        //领域星期报表列数据
+        var columns3 = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'channel',
+            title: '频道',
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'week',
+            title: '星期'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'recommend_count_sum',
+            title: '总推荐数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "recommend_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'read_count_sum',
+            title: '总阅读数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "read_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'goods_clicks_sum',
+            title: '总商品点击数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_clicks_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'article_count_sum',
+            title: '文章总数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "article_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'atlas_sum',
+            title: '图集数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "atlas_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'special_sum',
+            title: '专辑数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "special_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_le_five',
+            title: '0~5万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_le_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_five',
+            title: '5~10万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_ten',
+            title: '10~30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_thr_ten',
+            title: '>30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_thr_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'recommend_count_per',
+            title: '平均推荐数',
+            formatter: function (value, row, index) {
+                return Math.round(row["recommend_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'read_count_per',
+            title: '平均阅读数',
+            formatter: function (value, row, index) {
+                return Math.round(row["read_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'goods_clicks_per',
+            title: '平均商品点击数',
+            formatter: function (value, row, index) {
+                return Math.round(row["goods_clicks_sum"] / row["article_count_sum"]);
+            }
+        }];
+        //领域小时报表列数据
+        var columns4 = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'channel',
+            title: '频道'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'hour',
+            title: '小时'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'recommend_count_sum',
+            title: '总推荐数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "recommend_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'read_count_sum',
+            title: '总阅读数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "read_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'goods_clicks_sum',
+            title: '总商品点击数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "goods_clicks_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'article_count_sum',
+            title: '文章总数',
+            order: "asc",
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "article_count_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'atlas_sum',
+            title: '图集数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "atlas_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'special_sum',
+            title: '专辑数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "special_sum", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_le_five',
+            title: '0~5万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_le_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_five',
+            title: '5~10万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_five", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_ten',
+            title: '10~30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: true,
+            field: 'probability_thr_ten',
+            title: '>30万文章数',
+            footerFormatter: function (data) {
+                return mytable.getColumnSum(data, "probability_thr_ten", 0);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'recommend_count_per',
+            title: '平均推荐数',
+            formatter: function (value, row, index) {
+                return Math.round(row["recommend_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'read_count_per',
+            title: '平均阅读数',
+            formatter: function (value, row, index) {
+                return Math.round(row["read_count_sum"] / row["article_count_sum"]);
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'goods_clicks_per',
+            title: '平均商品点击数',
+            formatter: function (value, row, index) {
+                return Math.round(row["goods_clicks_sum"] / row["article_count_sum"]);
+            }
+        }];
+        myColumns.push(columns1);
+        myColumns.push(columns2);
+        myColumns.push(columns3);
+        myColumns.push(columns4);
+        //----------------------END-------------------------------------
+        $btn_query.click(function () {
+            mytable.bootStrap.columns = myColumns[report_type]
+            $tb_history_exact_report.bootstrapTable('destroy').bootstrapTable(mytable.getBootStrap({pageSize: 19}));
+        });
+        //----------------------END-------------------------------------
+        //选项卡默认选中第一个
+        if (typeof $tabs[0]) {
+            $tabs[0].click();
+        }
+    });
+</script>
+<%- include('../footer.ejs') %>

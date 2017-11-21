@@ -1,0 +1,268 @@
+<form id="form_app_list" class="form-inline" role="form">
+    <div class="row">
+        <div class="col-sm-12">
+            <label class="col-sm-12">已上传app版本信息查询</label>
+            <div class="form-group">
+                <label class="control-label">业态</label>
+                <select name="app_business" class="form-control">
+                    <option value="1">餐饮</option>
+                    <option value="2">零售</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="control-label">平台</label>
+                <select name="app_type" class="form-control">
+                    <option value="1">恵管家(Android)</option>
+                    <option value="2">恵管家(Windows)</option>
+                    <option value="5">恵掌柜(Android)</option>
+                    <option value="6">恵掌柜(Windows)</option>
+                    <option value="4">AErp</option>
+                    <option value="7">FPOS</option>
+                    <option value="8">MPOS</option>
+                </select>
+            </div>
+            <input id="btn_app_list" data-value="2" type="button" class="btn btn-default" value="查询"/>
+        </div>
+    </div>
+</form>
+<script>
+    $(function () {
+        //------------------获取页面元素--------------------------------
+        var $form_app_list = $("#form_app_list");//查询表单
+        var $btn_app_list = $("#btn_app_list");//查询提交
+        var $tb_app_list = $("#tb_app_list");//查询表格
+        var $env_name = $("#env_name");
+        //----------------------END-------------------------------------
+        //----------------------表格------------------------------------
+        var mytable = new MyTable($tb_app_list, $btn_app_list, $form_app_list);
+        mytable.bootStrap.uniqueId = "app_id";
+        mytable.bootStrap.url = "/tomcat/appUpload/appUploadOperator";
+        mytable.bootStrap.columns = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_name',
+            title: '名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_business',
+            title: '业态',
+            formatter: function (value, row, index) {
+                if (value === "1") {
+                    return '餐饮';
+                } else if (value === "2") {
+                    return '零售';
+                } else {
+                    return '未知';
+                }
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_type',
+            title: '平台',
+            formatter: function (value, row, index) {
+                if (value === 1) {
+                    return '恵管家(Android)';
+                } else if (value === 2) {
+                    return '恵管家(Windows)';
+                } else if (value === 4) {
+                    return 'aErp';
+                } else if (value === 5) {
+                    return '恵掌柜(Android)';
+                } else if (value === 6) {
+                    return '恵掌柜(Windows)';
+                } else {
+                    return '未知';
+                }
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'version_no',
+            title: '版本号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'is_latest',
+            title: 'pos最新',
+            formatter: function (value, row, index) {
+                if (value === 1) {
+                    return '<span style="color: red">是</span>';
+                }
+                return '否';
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'is_web_latest',
+            title: '网站最新',
+            formatter: function (value, row, index) {
+                if (value === 1) {
+                    return '<span style="color: red">是</span>';
+                }
+                return '否';
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'is_force_update',
+            title: '强制升级',
+            formatter: function (value, row, index) {
+                if (value === 1) {
+                    return '<span style="color: red">是</span>';
+                }
+                return '否';
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_notes',
+            title: '更新说明',
+            cellStyle: function cellStyle(value, row, index) {
+                return {
+                    css: {
+                        "max-width": "300px",
+                        "word-wrap": "break-word"
+                    }
+                };
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_create_at',
+            title: '上传时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_create_by',
+            title: '上传人'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'operator1',
+            title: '操作1',
+            formatter: function (value, row, index) {
+                var _result = "";
+                var app_id = row["app_id"];
+                var app_type = row["app_type"];
+                if (row["is_latest"] === 0) {
+                    _result = _result + '<input name="btn_operator" type="button" data-value="3" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置pos最新">';
+                }
+                if (row["is_web_latest"] === 0) {
+                    _result = _result + '<input name="btn_operator" type="button" data-value="4" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置网站最新">';
+                }
+                if (row["is_force_update"] === 0) {
+                    _result = _result + '<input name="btn_operator" type="button" data-value="5" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置强制升级">';
+                }
+                if (row["is_force_update"] === 1) {
+                    _result = _result + '<input name="btn_operator" type="button" data-value="6" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="取消强制升级">';
+                }
+                return _result;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'operator2',
+            title: '操作2',
+            formatter: function (value, row, index) {
+                var _result = "";
+                var app_id = row["app_id"];
+                var app_type = row["type"];
+                _result = _result + '<input name="btn_operator" type="button" data-value="8" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="删除">';
+                return _result;
+            }
+        }];
+        $tb_app_list.on("load-success.bs.table", function (e, row, element) {
+            $("input[name='btn_operator']").click(function () {
+                var $that = $(this);
+                var env_name = $env_name.find("li.active a").data("value");
+                var operator = $that.data("value");
+                var app_id = $that.data("appId");
+                var app_type = $that.data("appType");
+                var url = "/tomcat/appUpload/appUploadOperator";
+                var data = {
+                    env_name: env_name,
+                    operator: operator,
+                    app_id: app_id,
+                    app_type: app_type
+                }
+                async.auto({
+                    operator_type: function (callback) {
+                        //删除app，删除前询问是否删除
+                        if (operator === 8) {
+                            TIPBOX.confirm({message: "确认要删除选择的APP吗？"}).on(function (e) {
+                                if (!e) {
+                                    callback(null, false);
+                                    return;
+                                }
+                                callback(null, true);
+                            });
+                        } else {
+                            callback(null, true);
+                        }
+                    }
+                }, function (err, results) {
+                    var continue_exec = results["operator_type"];
+                    if (!continue_exec) {
+                        return;
+                    }
+                    $.get(url, data, function (data, status) {
+                        if (status === "success") {
+                            var _obj = JSON.parse(data);
+                            if (_obj.status === "success") {
+                                toastr.info(_obj.msg);
+                            } else {
+                                toastr.warning(_obj.msg);
+                            }
+                            $btn_app_list.click();
+                        } else {
+                            toastr.error("内部服务器错误");
+                        }
+                    });
+                });
+            });
+        });
+        mytable.currentFormData = function () {
+            var env_name = $env_name.find("li.active a").data("value");
+            var operator = $btn_app_list.data("value");
+            return {
+                env_name: env_name,
+                operator: operator
+            }
+        };
+        //----------------------END-------------------------------------
+        //---------------------注册事件---------------------------------
+        $btn_app_list.click(function () {
+            $tb_app_list.bootstrapTable(mytable.getBootStrap());
+        });
+        //----------------------END-------------------------------------
+    });
+</script>

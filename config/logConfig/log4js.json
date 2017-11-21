@@ -1,0 +1,14 @@
+{
+  "appenders": [
+    {
+      "type": "console"
+    },
+    {
+      "type": "dateFile",
+      "filename": "F:/webstorm/mynode/logs/mynode-request",
+      "pattern": "-yyyy-MM-dd.log",
+      "absolute": false,
+      "alwaysIncludePattern": true
+    }
+  ]
+}

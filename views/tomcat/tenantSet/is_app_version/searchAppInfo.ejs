@@ -1,0 +1,187 @@
+<div class="row">
+    <label class="col-sm-12">app版本信息查询</label>
+</div>
+<div class="row">
+    <form id="form_app_search" class="form-inline" role="form">
+        <div class="form-group">
+            <label class="control-label">业态</label>
+            <select name="app_business" class="form-control">
+                <option value="1">餐饮</option>
+                <option value="2">零售</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label class="control-label">平台</label>
+            <select name="app_type" class="form-control">
+                <option value="1">恵管家（Android）</option>
+                <option value="2">恵管家（Windows）</option>
+                <option value="3">Windows更新包</option>
+                <option value="4">AErp</option>
+                <option value="5">恵掌柜（Android）</option>
+                <option value="6">恵掌柜（Windows）</option>
+            </select>
+        </div>
+        <input id="btn_app_search" data-value="3" type="button" class="btn btn-default" value="查询"/>
+    </form>
+</div>
+<script>
+    $(function () {
+        //------------------获取页面元素--------------------------------
+        var $env_name = $("#env_name");//环境选择
+        var $func_type = $("#func_type");//功能选择
+        var $tb_app = $("#tb_app");//结果显示表格
+        var $form_app_search = $("#form_app_search");//表单
+        var $btn_app_search = $("#btn_app_search");//查询app信息提交
+        //----------------------END-------------------------------------
+        //公共变量
+        var env_name = $env_name.find("li.active a").data("value");
+        var func_type = $func_type.find("option:selected").val();
+        //----------------------表格2------------------------------------
+        var mytable_app = new MyTable($tb_app, $btn_app_search, $form_app_search)
+        mytable_app.bootStrap.url = "/tomcat/tenantSet/operatorTenantSet";
+        mytable_app.bootStrap.columns = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_name',
+            title: '名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_business',
+            title: '业态',
+            formatter: function (value) {
+                var _re = "未知业态";
+                if (value === "1") {
+                    _re = "餐饮";
+                } else if (value === "2") {
+                    _re = "零售";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_type',
+            title: '平台',
+            formatter: function (value) {
+                var _re = "未知平台";
+                if (value === 1) {
+                    _re = "恵管家（Android）";
+                } else if (value === 2) {
+                    _re = "恵管家（Windows）";
+                } else if (value === 3) {
+                    _re = "Windows更新包";
+                } else if (value === 4) {
+                    _re = "AErp";
+                } else if (value === 5) {
+                    _re = "慧掌柜（Android）";
+                } else if (value === 6) {
+                    _re = "慧掌柜（Windows）";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'version_no',
+            title: '版本号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'is_latest',
+            title: '是否pos最新版本',
+            formatter: function (value) {
+                var _re = "未知";
+                if (value === 1) {
+                    _re = "<span style='color:red'>是</span>";
+                } else if (value === 0) {
+                    _re = "否";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'is_web_latest',
+            title: '是否web最新版本',
+            formatter: function (value) {
+                var _re = "未知";
+                if (value === 1) {
+                    _re = "<span style='color:red'>是</span>";
+                } else if (value === 0) {
+                    _re = "否";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'is_force_update',
+            title: '是否强制升级',
+            formatter: function (value) {
+                var _re = "未知";
+                if (value === 1) {
+                    _re = "<span style='color:red'>是</span>";
+                } else if (value === 0) {
+                    _re = "否";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_notes',
+            title: '备注',
+            cellStyle: function cellStyle(value, row, index) {
+                return {
+                    css: {
+                        "max-width": "300px"
+                    }
+                };
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_create_at',
+            title: '上传时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:ss:mm");
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'app_create_by',
+            title: '上传人'
+        }];
+        mytable_app.form_data = {
+            env_name: env_name,
+            func_type: func_type,
+            exec_type: $btn_app_search.data("value")
+        };
+        //----------------------END-------------------------------------
+        $btn_app_search.click(function () {
+            $tb_app.bootstrapTable('destroy').bootstrapTable(mytable_app.getBootStrap());
+        });
+        //----------------------END-------------------------------------
+    });
+</script>

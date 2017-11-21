@@ -1,0 +1,182 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <h3 class="page-title">用户列表</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_query" class="form-inline" role="form">
+                <div class="form-group">
+                    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                    <button id="<%= operator[i]["label_id"] %>" type="button"
+                            class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                    <span aria-hidden="true"
+                          class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                    </button>
+                    <% } %>
+                </div>
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="登录名或电话">
+                    <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 10px">
+        <div class="col-sm-12">
+            <table id="tb_user"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+    //----------------------------获取页面元素-------------------------------------
+    var $form_query = $("#form_query");
+    var $btn_query = $("#btn_query");
+    var $tb_user = $("#tb_user");
+    //--------------------------------END-----------------------------------------
+    //--------------------------------表格----------------------------------------
+    var mytable = new MyTable($tb_user, $btn_query, $form_query);
+    mytable.bootStrap.url = "/basic/user/list";
+    mytable.bootStrap.columns = [{
+        checkbox: true
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: true,
+        field: 'login_name',
+        title: '登录名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'login_pwd',
+        title: '密码'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'status',
+        title: '状态',
+        formatter: function (value, row, index) {
+            var result = "-";
+            if (value === 0) {
+                result = "启用";
+            } else if (value === 1) {
+                result = "禁用";
+            }
+            return result;
+        }
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'user_name',
+        title: '用户名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'last_login_time',
+        title: '最后登录时间',
+        formatter: function (value) {
+            return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
+        }
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'white_list',
+        title: '域名/ip过滤白名单'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'black_list',
+        title: '域名/ip过滤黑名单'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'last_login_ip',
+        title: '最后登录IP'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'tel',
+        title: '电话'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'email',
+        title: '邮箱'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'qq',
+        title: 'QQ'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'memo',
+        title: '备注'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'created_at',
+        title: '创建时间',
+        formatter: function (value) {
+            return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm:ss")
+        }
+    }];
+    $tb_user.bootstrapTable(mytable.getBootStrap());
+    $btn_query.click(function () {
+        $tb_user.bootstrapTable("destroy").bootstrapTable(mytable.getBootStrap());
+    });
+    //--------------------------------END-----------------------------------------
+    //-----------------------------增删改查事件注册--------------------------------
+    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+    <% if(operator[i]["label_id"] == "btn_del"){ %>
+    //注册删除按钮的事件
+    $("#btn_del").click(function () {
+        mytable.delData("<%= operator[i]["res_url"] %>")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_add"){ %>
+    //注册新增按钮
+    $("#btn_add").click(function () {
+        mytable.addData("<%= operator[i]["res_url"] %>", "增加用户")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_edit"){ %>
+    //注册修改按钮
+    $("#btn_edit").click(function () {
+        mytable.editData("<%= operator[i]["res_url"] %>", "修改用户")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_authority"){ %>
+    //注册设置权限
+    $("#btn_authority").click(function () {
+        mytable.editData("<%= operator[i]["res_url"] %>", "设置访问权限")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_env_auth"){ %>
+    //设置环境权限
+    $("#btn_env_auth").click(function () {
+        mytable.editData("<%= operator[i]["res_url"] %>", "设置环境权限")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_tomcat_auth"){ %>
+    //设置程序权限
+    $("#btn_tomcat_auth").click(function () {
+        mytable.editData("<%= operator[i]["res_url"] %>", "设置程序权限")
+    });
+    <% } %>
+    <% } %>
+    //--------------------------------END-----------------------------------------
+</script>
+<%- include('../../footer.ejs') %>

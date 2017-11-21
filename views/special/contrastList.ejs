@@ -1,0 +1,363 @@
+<%- include('../header.ejs') %>
+<%- include('../menu.ejs') %>
+<%- include('../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12" style="margin-top: -30px">
+            <h3 class="page-header">数据库结构对比（对比表信息）</h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-5" style="background-color: #FFFFF0">
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <label>数据库1</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <div class="form-inline" role="form">
+                        <div class="form-group">
+                            <label class="control-label">环境</label>
+                            <select id="db1_env" class="form-control">
+                                <% for(var i = 0, j = envs.length;i < j;i++){ %>
+                                <option value="<%= envs[i] %>"> <%= envs[i] %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">数据库</label>
+                            <select id="db1_db" class="form-control">
+                                <% for(var i = 0, j = display_dbs[envs[0]].length;i < j;i++){ %>
+                                <option value="<%= display_dbs[envs[0]][i] %>"> <%= display_dbs[envs[0]][i] %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-2">
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <label>开始对比前，请先选择左右对比库</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <input id="start_contrast" type="button" class="btn btn-primary" value="开始对比">
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-5" style="background-color: 	#FFF0F5">
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <label>数据库2</label>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12 text-center">
+                    <div class="form-inline" role="form">
+                        <div class="form-group">
+                            <label class="control-label">环境</label>
+                            <select id="db2_env" class="form-control">
+                                <% for(var i = 0, j = envs.length;i < j;i++){ %>
+                                <option value="<%= envs[i] %>"> <%= envs[i] %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label">数据库</label>
+                            <select id="db2_db" class="form-control">
+                                <% for(var i = 0, j = display_dbs[envs[0]].length;i < j;i++){ %>
+                                <option value="<%= display_dbs[envs[0]][i] %>"> <%= display_dbs[envs[0]][i] %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="contrast_result" class="row">
+        <div class="col-sm-12 text-center">
+            <!--表对比结果-->
+            <div class="row">
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+                <div class="col-sm-2">
+                    <label style="margin-top: 10px;color: blue">表是否存在对比结果</label>
+                </div>
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 text-center">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label> 数据库1多出的表</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="db1_table" class="col-sm-12" style="color: red">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 text-center">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label> 数据库2多出的表</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="db2_table" class="col-sm-12" style="color: red">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--字段对比结果-->
+            <div class="row">
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+                <div class="col-sm-2">
+                    <label style="margin-top: 10px;color: blue">数据库同名表,字段是否存在对比结果</label>
+                </div>
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>数据库1同名表，多出的表字段</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="db1_field" class="col-sm-12" style="color: red">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>数据库2同名表，多出的表字段</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="db2_field" class="col-sm-12" style="color: red">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--字段内容对比结果-->
+            <div class="row">
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+                <div class="col-sm-2">
+                    <label style="margin-top: 5px;color: blue">同表、同字段，字段对比结果(字段类型、允许null、默认值)</label>
+                </div>
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="row">
+                        <div id="db_field_diff" class="col-sm-12" style="color: red">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>原始输出结果</label>
+                            <pre id="db_field_ori" style="color: red;text-align: left"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--同名表索引比结果-->
+            <div class="row">
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+                <div class="col-sm-2">
+                    <label style="margin-top: 10px;color: blue">同名表索引是否存在对比结果</label>
+                </div>
+                <div class="col-sm-5">
+                    <hr>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 text-center">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>数据库1同名表多出的索引</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="db1_index" class="col-sm-12" style="color: red">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 text-center">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <label>数据库1同名表多出的索引</label>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div id="db2_index" class="col-sm-12" style="color: red">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //页title
+        $(document).attr("title", "<%=typeof title == "string"?title:"首页"%>");
+        //------------------获取页面元素--------------------------------
+        //查询元素
+        var $db1_env = $("#db1_env");
+        var $db1_db = $("#db1_db");
+        var $db2_env = $("#db2_env");
+        var $db2_db = $("#db2_db");
+        var $start_contrast = $("#start_contrast");//开始对比
+        //展示元素
+        var $db1_table = $("#db1_table");//db1多出的表
+        var $db2_table = $("#db2_table");//db2多出的表
+        var $db1_field = $("#db1_field");//db1同名表多出字段
+        var $db2_field = $("#db2_field");//db2同名表多出字段
+        var $db_field_diff = $("#db_field_diff");//同名、同字段对比
+        var $db_field_ori = $("#db_field_ori");//同名、同字段原始内容
+        var $db1_index = $("#db1_index");//db1同名表多出索引
+        var $db2_index = $("#db2_index");//db2同名表多出索引
+        //--------------------------------------------------------------
+        //不同环境显示不同数据库
+        var env_dbs = {};
+        <%for(var key in display_dbs){%>
+        env_dbs["<%=key%>"] = [];
+        <%for(var i=0,j=display_dbs[key].length;i<j;i++){%>
+        env_dbs["<%=key%>"].push("<%=display_dbs[key][i]%>");
+        <%}%>
+        <%}%>
+        //json格式化
+        function syntaxHighlight(json) {
+            if (typeof json != 'string') {
+                json = JSON.stringify(json, undefined, 2);
+            }
+            json = json.replace(/&/g, '&').replace(/</g, '<').replace(/>/g, '>');
+            return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+                var cls = 'number';
+                if (/^"/.test(match)) {
+                    if (/:$/.test(match)) {
+                        cls = 'key';
+                    } else {
+                        cls = 'string';
+                    }
+                } else if (/true|false/.test(match)) {
+                    cls = 'boolean';
+                } else if (/null/.test(match)) {
+                    cls = 'null';
+                }
+                return '<span class="' + cls + '">' + match + '</span>';
+            });
+        }
+
+        $db1_env.change(function () {
+            var env_name = $db1_env.find("option:selected").val();
+            $db1_db.empty();
+            if (typeof env_dbs[env_name] !== "undefined") {
+                var dbs = env_dbs[env_name];
+                for (var i = 0, j = dbs.length; i < j; i++) {
+                    $db1_db.append(" <option value='" + dbs[i] + "'>" + dbs[i] + "</option>");
+                }
+            }
+        });
+        $db2_env.change(function () {
+            var env_name = $db2_env.find("option:selected").val();
+            $db2_db.empty();
+            if (typeof env_dbs[env_name] !== "undefined") {
+                var dbs = env_dbs[env_name];
+                for (var i = 0, j = dbs.length; i < j; i++) {
+                    $db2_db.append(" <option value='" + dbs[i] + "'>" + dbs[i] + "</option>");
+                }
+            }
+        });
+        $start_contrast.click(function () {
+            closeButton($start_contrast);
+            $db1_table.empty();
+            $db2_table.empty();
+            $db1_field.empty();
+            $db2_field.empty();
+            $db_field_diff.empty();
+            $db_field_ori.empty();
+            $db1_index.empty();
+            $db2_index.empty();
+            var db1_env = $db1_env.find("option:selected").val();
+            var db1_db = $db1_db.find("option:selected").val();
+            var db2_env = $db2_env.find("option:selected").val();
+            var db2_db = $db2_db.find("option:selected").val();
+            var data = {
+                db1_env: db1_env,
+                db1_db: db1_db,
+                db2_env: db2_env,
+                db2_db: db2_db
+            };
+            var url = "/special/contrast/doStartContrast";
+            $.get(url, data, function (data, status) {
+                openButton($start_contrast);
+                if (status == "success") {
+                    var _obj = JSON.parse(data);
+                    if (_obj.status == "success") {
+                        var table_name_contrast = _obj.data["table_name_contrast"];
+                        var column_name_contrast = _obj.data["column_name_contrast"];
+                        var field_name_contrast = _obj.data["field_name_contrast"];
+                        var table_index_contrast = _obj.data["table_index_contrast"];
+                        //展示表对比
+                        $db1_table.text(table_name_contrast[0].join("、"));
+                        $db2_table.text(table_name_contrast[1].join("、"));
+                        //展示表字段对比
+                        for (var table_name in column_name_contrast) {
+                            var table_info = column_name_contrast[table_name]
+                            //数据库1表字段多出
+                            $db1_field.append("<p>" + table_name + "：" + table_info[0].join("、") + "</p>")
+                            //数据库2表字段多出
+                            $db2_field.append("<p>" + table_name + "：" + table_info[1].join("、") + "</p>")
+                        }
+                        //展示同表、同字段内容对比
+                        for (var table_name in field_name_contrast) {
+                            let _str = "<p>表名：" + table_name;
+                            for (let field_name in field_name_contrast[table_name]) {
+                                _str = _str + "|字段名:" + field_name;
+                            }
+                            _str = _str + "</p>";
+                            $db_field_diff.append(_str);
+                        }
+                        $db_field_ori.html(syntaxHighlight(field_name_contrast));
+                        //展示同表索引存在对比
+                        for (let table_name in table_index_contrast) {
+                            let index_info = table_index_contrast[table_name]
+                            //数据库1表字段多出
+                            $db1_index.append("<p>" + table_name + "：" + index_info[0].join("、") + "</p>")
+                            //数据库2表字段多出
+                            $db2_index.append("<p>" + table_name + "：" + index_info[1].join("、") + "</p>")
+                        }
+                        toastr.info(_obj.msg);
+                    } else {
+                        toastr.warning(_obj.msg);
+                    }
+                } else {
+                    toastr.error("内部服务器错误");
+                }
+            });
+        });
+    });
+</script>
+<%- include('../footer.ejs') %>

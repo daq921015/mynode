@@ -1,0 +1,67 @@
+<div class="container-fluid">
+    <div class="content_wrap">
+        <div class="zTreeDemoBackground left">
+            <ul id="treeAuth" class="ztree"></ul>
+        </div>
+    </div>
+    <div class="form-group" style="float:right;">
+        <button id="authority_commit" class="btn btn-primary" data-dismiss="modal">保存权限</button>
+        <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+    </div>
+</div>
+<script>
+    var setting = {
+        check: {
+            enable: true,
+            chkboxType: {"Y": "ps", "N": "ps"}
+        }
+    };
+    var zNodes = $.parseJSON('<%- auth_list %>');
+    $(function () {
+        $.fn.zTree.init($("#treeAuth"), setting, zNodes);
+    });
+    $("#authority_commit").on("click", function () {
+        var userTable = $("#tb_user");
+        var arrselections = userTable.bootstrapTable('getSelections');
+        if (arrselections.length <= 0) {
+            toastr.warning('没有指定修改用户');
+            return;
+        }
+        var user_id = arrselections[0]["id"];
+        var treeObj = $.fn.zTree.getZTreeObj("treeAuth");
+        var check_data = treeObj.getCheckedNodes(true);
+        var auth_re_list = [];
+        //只获取第四层权限数据
+        for (var i = 0, j = check_data.length; i < j; i++) {
+            if (check_data[i]["level"] === 3) {
+                auth_re_list.push(_.pick(check_data[i], "user_id", "res_info_id", "privilege_code"))
+            }
+        }
+        var url = "/basic/user/setTomcatAuth";
+        var form_data = new FormData();
+        form_data.append("tomcat_auth", JSON.stringify(auth_re_list));
+        form_data.append("user_id", user_id);
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.msg);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                $("#tb_user").bootstrapTable("refresh");
+            }
+        });
+    });
+</script>

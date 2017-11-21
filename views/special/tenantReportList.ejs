@@ -1,0 +1,396 @@
+<%- include('../header.ejs') %>
+<%- include('../menu.ejs') %>
+<%- include('../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div id="report_type" class="col-sm-5">
+            <ul class="nav nav-tabs">
+                <li><a href="#" data-value="1" title="商户维度数据统计报表" data-toggle="tab">商户报表</a></li>
+                <li><a href="#" data-value="2" title="分区维度数据统计报表" data-toggle="tab">分区报表</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-10">
+            <form id="form_report" class="form-inline" role="form">
+                <div class="form-group">
+                    <label class="control-label">环境</label>
+                    <select name="env_name" class="form-control">
+                        <% for(var i = 0, j = envs.length;i < j;i++){ %>
+                        <option value="<%= envs[i] %>"> <%= envs[i] %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">分区</label>
+                    <select name="partition_code" class="form-control">
+                        <% for(var i = 0, j = partition[envs[0]].length;i < j;i++){ %>
+                        <option value="<%= partition[envs[0]][i] %>"> <%= partition[envs[0]][i] %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">商户类型</label>
+                    <select name="is_test" class="form-control">
+                        <option value="">全部商户</option>
+                        <option value="0">正式商户</option>
+                        <option value="1">测试商户</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input name="tenant_code" type="text" class="form-control" placeholder="请输入商户号">
+                </div>
+                <div class="form-group">
+                    <input id="btn_report" type="button" class="btn btn-default" value="查询">
+                </div>
+            </form>
+        </div>
+        <div class="col-sm-2">
+            <div id="export_table" class="btn-group pull-right">
+                <button data-toggle="dropdown" class="btn btn-green dropdown-toggle">
+                    Export <i class="fa fa-angle-down"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-light pull-right">
+                    <li><a href="#" data-type="xlsx" data-table="#tb_tenant_report">导出excel</a></li>
+                    <li><a href="#" data-type="sql" data-table="#tb_tenant_report">导出sql</a></li>
+                    <li><a href="#" data-type="json" data-table="#tb_tenant_report">导出json</a></li>
+                    <li><a href="#" data-type="txt" data-table="#tb_tenant_report">导出txt</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_report"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //页title
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $report_type = $("#report_type");//报表类型
+        var $form_report = $("#form_report");//表单
+        var $btn_report = $("#btn_report");//提交
+        var $tb_report = $("#tb_report");//表格
+        //下拉
+        var $env_name = $form_report.find('select[name="env_name"]');
+        var $partition_code = $form_report.find('select[name="partition_code"]');
+        var $is_test = $form_report.find('select[name="is_test"]');
+        //报表选项卡
+        var $tabs = $('a[data-toggle="tab"]');
+        //--------------------------------------------------------------
+        //------------------分区，下拉变化,导出-------------------------
+        //不同环境显示不同分区
+        var partition = {};
+        <% for(var key in partition){ %>
+        partition["<%= key %>"] = [];
+        <% for(var i = 0, j = partition[key].length;i < j;i++){ %>
+        partition["<%= key %>"].push("<%= partition[key][i] %>");
+        <% } %>
+        <% } %>
+        $env_name.change(function () {
+            var env_name = $env_name.find("option:selected").val();
+            $partition_code.empty();
+            if (typeof partition[env_name] !== "undefined") {
+                var pars = partition[env_name];
+                for (var i = 0, j = pars.length; i < j; i++) {
+                    $partition_code.append("<option value='" + pars[i] + "'>" + pars[i] + "</option>");
+                }
+            }
+        });
+        //选项卡更换,绑定点击事件
+        $tabs.on("click", function (e) {
+            var $that = $(this);
+            $tabs.css("background-color", "");
+            $that.css("background-color", "#99FFFF");
+            var report_type = $that.attr("data-value");
+            //商户报表
+            if (report_type === "1") {
+                $is_test.parent().show();
+            } else if (report_type === "2") {
+                $is_test.parent().hide();
+            }
+        });
+        //选项卡默认选中第一个
+        if (typeof $tabs[0]) {
+            $tabs[0].click();
+        }
+        //导出查询数据
+        $("#export_table ul li a").click(function (event) {
+            event.preventDefault();
+            var $that = $(this);
+            var exportTable = $that.data("table");
+            var type = $that.data("type");
+            $(exportTable).tableExport({
+                type: type,
+                escape: 'false'
+            });
+        });
+        //----------------------------END-------------------------------
+        //----------------------------表格-------------------------------
+        var mytable = new MyTable($tb_report, $btn_report, $form_report);
+        mytable.bootStrap.url = "/special/tenantReport/reportList";
+        mytable.bootStrap.sidePagination = "client";
+        mytable.bootStrap.showFooter = true;
+        mytable.currentFormData = function () {
+            return {
+                report_type: $report_type.find("li.active a").data("value")
+            }
+        };
+        //所有报表列信息
+        var columns = {
+            "1": [
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'tenant_id',
+                    title: '商户id'
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'tenant_code',
+                    title: '商户编号'
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: false,
+                    field: 'tenant_name',
+                    title: '商户名称'
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: false,
+                    field: 'tenant_linkman',
+                    title: '联系人'
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'tenant_type',
+                    title: '商户类型',
+                    formatter: function (value, row, index) {
+                        var _re = "未知类型";
+                        if (value === 0) {
+                            _re = '正式商户';
+                        } else if (value === 1) {
+                            _re = '测试商户';
+                        }
+                        return _re;
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'tenant_business',
+                    title: '商户业态',
+                    formatter: function (value, row, index) {
+                        var _re = "未知业态";
+                        if (value === "1") {
+                            _re = '餐饮';
+                        } else if (value === "2") {
+                            _re = "零售";
+                        }
+                        return _re;
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'branch_count',
+                    title: '门店总数量',
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "branch_count", 0);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'branch_expired_count',
+                    title: '过期门店数量',
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "branch_expired_count", 0);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'branch_pay_count',
+                    title: '有付款记录门店数量',
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "branch_pay_count", 0);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'tenant_pay_amount',
+                    title: '商户付款总金额',
+                    formatter: function (value, row, index) {
+                        return parseFloat(value).toFixed(2);
+                    },
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "tenant_pay_amount", 2);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'vip_count',
+                    title: '商户会员数量',
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "vip_count", 0);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'vip_sum_consume',
+                    title: '会员累计总消费金额',
+                    formatter: function (value, row, index) {
+                        return parseFloat(value).toFixed(2);
+                    },
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "vip_sum_consume", 2);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'sale_count',
+                    title: '商户流水总数',
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "sale_count", 0);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'sale_total_amount',
+                    title: '商户流水总金额',
+                    formatter: function (value, row, index) {
+                        return parseFloat(value).toFixed(2);
+                    },
+                    footerFormatter: function (data) {
+                        return mytable.getColumnSum(data, "sale_total_amount", 2);
+                    }
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'partition_code',
+                    title: '商户分区'
+                }, {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'tenant_create_at',
+                    title: '商户创建时间',
+                    formatter: function (value) {
+                        return moment(value).utcOffset(8).format("YYYY-MM-DD HH:mm")
+                    }
+                }],
+            "2": [
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'latest_date',
+                    title: '最近7天日期'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'vip_date_count',
+                    title: '会员日增加数'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'vip_his_count',
+                    title: '会员总数'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'vip_date_sum_consume',
+                    title: '会员日消费额'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'vip_his_sum_consume',
+                    title: '会员总消费额'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'sale_date_count',
+                    title: '流水日增加数'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'sale_his_count',
+                    title: '流水总数'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'sale_date_total_amount',
+                    title: '流水日营业额'
+                },
+                {
+                    halign: "center",
+                    align: "center",
+                    valing: "middle",
+                    sortable: true,
+                    field: 'sale_his_total_amount',
+                    title: '流水总营业额'
+                }
+            ]
+        }
+        //----------------------------END-------------------------------
+        $btn_report.click(function () {
+            //获取查询环境
+            mytable.bootStrap.columns = columns[$report_type.find("li.active a").data("value")];
+            $tb_report.bootstrapTable(mytable.getBootStrap());
+        });
+        //----------------------------END-------------------------------
+    });
+</script>
+<%- include('../footer.ejs') %>

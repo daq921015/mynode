@@ -1,0 +1,180 @@
+<form id="form_app_upload" class="form-inline" role="form">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label">业态</label>
+                <select name="app_business" class="form-control">
+                    <option value="1">餐饮</option>
+                    <option value="2">零售</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="control-label">平台</label>
+                <select name="app_type" class="form-control">
+                    <option value="1">恵管家(Android)</option>
+                    <option value="2">恵管家(Windows)</option>
+                    <option value="5">恵掌柜(Android)</option>
+                    <option value="6">恵掌柜(Windows)</option>
+                    <option value="4">AErp</option>
+                    <option value="7">FPOS</option>
+                    <option value="8">MPOS</option>
+                </select>
+            </div>
+            <div class="checkbox">
+                <label>
+                    <input name="manual_pro" type="checkbox">手动选择程序
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <input id="btn_open_select_win" data-value="11" type="button" class="btn btn-primary"
+                       value="仓库程序">
+            </div>
+            <div class="form-group">
+                <input name="auto_path_name" style="width: 513px" readonly="readonly" class="form-control"/>
+            </div>
+            <div class="form-group" style="display: none">
+                <label class="control-label">版本编号</label>
+                <input name="version_no" type="text" style="width: 145px" class="form-control"
+                       disabled="disabled" placeholder="版本编号"/>
+            </div>
+            <div class="form-group" style="display: none">
+                <input name="manual_path_name" type="file" class="form-control" disabled="disabled"/>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label">POS最新版本:</label>
+                <label class="radio-inline">
+                    <input name="app_is_latest" type="radio" value="1"/>是
+                </label>
+                <label class="radio-inline">
+                    <input name="app_is_latest" type="radio" value="0" checked/>否
+                </label>
+            </div>
+            <div class="form-group" style="margin-left: 15px">
+                <label class="control-label">网站最新版本:</label>
+                <label class="radio-inline">
+                    <input name="app_is_WebLatest" type="radio" value="1"/>是
+                </label>
+                <label class="radio-inline">
+                    <input name="app_is_WebLatest" type="radio" value="0" checked/>否
+                </label>
+            </div>
+            <div class="form-group" style="margin-left: 15px">
+                <label class="control-label">POS强制升级:</label>
+                <label class="radio-inline">
+                    <input name="app_is_forceUpdate" type="radio" value="1"/>是
+                </label>
+                <label class="radio-inline">
+                    <input name="app_is_forceUpdate" type="radio" value="0" checked/>否
+                </label>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <div class="form-group">
+                <label class="control-label">更新说明:</label>
+                <input name="notes" class="form-control" style="width: 450px" type="text" placeholder="更新说明">
+            </div>
+            <div class="form-group">
+                <input id="btn_app_upload" data-value="1" type="button" class="btn btn-primary" value="开始上传">
+            </div>
+        </div>
+    </div>
+</form>
+<script>
+    //------------------获取页面元素--------------------------------
+    var $form_app_upload = $("#form_app_upload");//上传表单
+    var $btn_app_upload = $("#btn_app_upload");//上传按钮
+    var $btn_open_select_win = $("#btn_open_select_win");//仓库程序
+    var $env_name = $("#env_name");
+    //----------------------END-------------------------------------
+    $btn_open_select_win.click(function () {
+        var env_name = $env_name.find("li.active a").data("value");
+        var operator = $btn_open_select_win.data("value");
+        var url = "/tomcat/appUpload/appUploadOperator?env_name=" + env_name + "&operator=" + operator;
+        var options = {
+            title: "选择需要上传的程序",
+            width: 1024,
+            url: url
+        };
+        TIPBOX.dialog(options);
+    });
+    //手动选择程序
+    $("input[name='manual_pro']").change(function () {
+        var $that = $(this);
+        if ($that.is(':checked')) {
+            $btn_open_select_win.parent().hide();
+            $("input[name='auto_path_name']").parent().hide();
+            $("input[name='auto_path_name']").attr("disabled", true);
+
+            $("input[name='version_no']").parent().show();
+            $("input[name='version_no']").attr("disabled", false);
+            $("input[name='manual_path_name']").parent().show();
+            $("input[name='manual_path_name']").attr("disabled", false);
+        } else {
+            $btn_open_select_win.parent().show();
+            $("input[name='auto_path_name']").parent().show();
+            $("input[name='auto_path_name']").attr("disabled", false);
+
+            $("input[name='version_no']").parent().hide();
+            $("input[name='version_no']").attr("disabled", true);
+            $("input[name='manual_path_name']").parent().hide();
+            $("input[name='manual_path_name']").attr("disabled", true);
+        }
+    });
+    //上传程序
+    $btn_app_upload.on("click", function () {
+        var url = "/tomcat/appUpload/appUploadOperator";
+        var env_name = $env_name.find("li.active a").data("value");
+        var operator = $btn_app_upload.data("value");
+        var form_data = new FormData($form_app_upload[0]);
+        form_data.append("env_name", env_name);
+        form_data.append("operator", operator);
+        var data = form_data.ConvertToJson();
+        if (data["manual_pro"] !== "on" && data["auto_path_name"] === "") {
+            toastr.warning("请先从仓库选择上传程序");
+            return;
+        }
+        if (data["manual_pro"] === "on" && (data["version_no"].trim() === "" || data["manual_path_name"].name === "")) {
+            toastr.warning("手动上传程序时，请输入版本号并选择上传文件");
+            return;
+        }
+        if (data["manual_pro"] === "on" && (!/^\d+\.\d+\.\d+$/.test(data["version_no"]))) {
+            toastr.warning("版本号不符合要求,版本号为数字和两个点组成。示例:1.2.3");
+            return;
+        }
+        closeButton($btn_app_upload);
+        $btn_app_upload.val("正在上传...");
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status == "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                $btn_app_upload.val("开始上传");
+                openButton($btn_app_upload);
+            }
+        });
+    });
+</script>

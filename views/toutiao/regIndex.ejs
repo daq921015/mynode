@@ -1,0 +1,173 @@
+<%- include('../header.ejs') %>
+<%- include('../menu.ejs') %>
+<%- include('../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">检索标题是否为 标题党</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="row">
+                <div class="col-sm-12">
+                    <form id="form_title_check">
+                        <label class="label label-info large" style="font-size: 16px">输入检错标题</label>
+                        <textarea name="title_example" wrap="off"
+                                  style="overflow:scroll;width:100%;height:350px;margin-top: 10px;resize: none;"></textarea>
+                    </form>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <br>说明：
+                    <br>1、本页功能：输入指定标题，检测标题是否可能被判定标题党
+                    <br>2、左侧文本框输入要检索的标题，一行为一个标题。点击“标题检索”按钮，右侧会输出检测结果
+                    <br>3、标题判定标准：官方提供的标题党句式或自己组织的句式
+                    <br>4、如果检测的标题不同行标题内容一样，则多个标题会被认为一个标题
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-1">
+            <div class="col-sm-12">
+                <button id="btn_title_check" class="btn btn-primary">标题检索</button>
+            </div>
+        </div>
+        <div class="col-sm-7">
+            <div class="row">
+                <div class="col-sm-12">
+                    <label class="label label-danger large" style="font-size: 12px;">被判定为标题党的标题</label>
+                    <table id="tb_error_title" style="margin-top: 5px">
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <label class="label label-success large" style="font-size: 12px;">检索通过的标题</label>
+                    <table id="tb_success_title" style="margin-top: 5px">
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+    //------------------------获取页面元素-------------------------
+    var $form_title_check = $("#form_title_check");//title表单
+    var $btn_title_check = $("#btn_title_check");//检索按钮
+    var $tb_error_title = $("#tb_error_title");//问题标题
+    var $tb_success_title = $("#tb_success_title");//成功标题
+    var $title_example = $form_title_check.find("textarea[name='title_example']");
+    //-----------------------------END----------------------------
+    //-----------------------------表格---------------------------
+    //-------------表格1---------------------------
+    var table_option = {
+        sidePagination: "client",
+        height: 280,
+        pageSize: 5,
+        pageList: [5, 10],
+        url: ""
+    };
+    var err_mytable = new MyTable($tb_error_title, $btn_title_check, $form_title_check);
+    var err_table_options = err_mytable.getBootStrap();
+    _.extend(err_table_options, table_option);
+    err_table_options.columns = [{
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'number',
+        title: '序号'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'title',
+        title: '标题'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'reg_info',
+        title: '命中句式'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'is_official',
+        title: '句式来源',
+        formatter: function (value) {
+            var _re = "未知来源";
+            if (value === 0) {
+                _re = "官方";
+            } else if (value === 1) {
+                _re = "自己组织";
+            }
+            return _re;
+        }
+    }];
+    $tb_error_title.bootstrapTable(err_table_options);
+    //-------------表格2---------------------------
+    var suc_mytable = new MyTable($tb_success_title, $btn_title_check, $form_title_check);
+    var suc_table_options = suc_mytable.getBootStrap();
+    _.extend(suc_table_options, table_option);
+    suc_table_options.columns = [{
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'number',
+        title: '序号'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'title',
+        title: '标题'
+    }];
+    $tb_success_title.bootstrapTable(suc_table_options);
+    openButton($btn_title_check);
+    //--------------------------END----------------------------------
+    //注册检索
+    $btn_title_check.on("click", function (e) {
+        //获取所有检索标题，优化两侧空格，并转成数组字符串
+        var titles_content = $.trim($title_example.val());
+        if (titles_content === "") {
+            toastr.warning('检索标题内容不能为空！');
+            return;
+        }
+        var title_split = titles_content.split("\n");
+        var title_arr = [];
+        for (var i = 0, j = title_split.length; i < j; i++) {
+            title_arr.push($.trim(title_split[i]));
+        }
+        var form_data = new FormData();
+        form_data.append("titles", JSON.stringify(title_arr));
+        var url = "/toutiao/titleCheck/getTitleCheckResult";
+        //表单提交
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    var err_titles = _obj.data[0];
+                    var suc_titles = _obj.data[1];
+                    $tb_error_title.bootstrapTable("load", err_titles)
+                    $tb_success_title.bootstrapTable("load", suc_titles)
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+            }
+        });
+    });
+</script>
+<%- include('../footer.ejs') %>

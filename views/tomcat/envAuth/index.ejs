@@ -1,0 +1,126 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">环境权限设置</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_env_auth" class="form-inline" role="form">
+                <div class="form-group">
+                    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                    <button id="<%= operator[i]["label_id"] %>" type="button"
+                            class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                        <span aria-hidden="true"
+                              class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                    </button>
+                    <% } %>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">环境:</label>
+                    <select name="env_name" class="form-control">
+                        <% for(var i = 0, j = envs.length;i < j;i++){ %>
+                        <option value="<%= envs[i] %>"> <%= envs[i] %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">权限:</label>
+                    <select name="privilege_code" class="form-control">
+                        <option value="">全部</option>
+                        <% for(var i = 0, j = privileges.length;i < j;i++){ %>
+                        <option value="<%= privileges[i]["privilege_code"] %>"> <%= privileges[i]["privilege_name"] %></option>
+                        <% } %>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="登录名/用户名">
+                    <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_env_auth"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+    //------------------获取页面元素--------------------------------
+    var $form_env_auth = $("#form_env_auth");//查询表单
+    var $tb_env_auth = $("#tb_env_auth");//表格
+    var $btn_query = $("#btn_query");//查询提交
+    //----------------------END-------------------------------------
+    //---------------------初始化表格参数---------------------------
+    var mytable = new MyTable($tb_env_auth, $btn_query, $form_env_auth);
+    mytable.bootStrap.url = "/tomcat/envAuth/list";
+    mytable.bootStrap.columns = [{
+        checkbox: true
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'login_name',
+        title: '登录名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'user_name',
+        title: '用户名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'env_name',
+        title: '环境名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'privilege_name',
+        title: '权限名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'privilege_code',
+        title: '权限编号'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'memo',
+        title: '备注'
+    }];
+    $tb_env_auth.bootstrapTable(mytable.getBootStrap());
+    //绑定查询按钮
+    $btn_query.click(function () {
+        $tb_env_auth.bootstrapTable("refresh");
+    });
+    //注册表格事件
+    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+    <% if(operator[i]["label_id"] == "btn_del"){ %>
+    //注册删除按钮的事件
+    $("#btn_del").click(function () {
+        mytable.delData("<%= operator[i]["res_url"] %>")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_add"){ %>
+    //注册新增按钮
+    $("#btn_add").click(function () {
+        mytable.addData("<%= operator[i]["res_url"] %>", "新增环境权限")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_edit"){ %>
+    //注册修改按钮
+    $("#btn_edit").click(function () {
+        mytable.editData("<%= operator[i]["res_url"] %>", "修改环境权限")
+    });
+    <% } %>
+    <% } %>
+</script>
+<%- include('../../footer.ejs') %>

@@ -1,0 +1,84 @@
+<div class="container-fluid">
+    <form id="form_conf_edit" class="form-horizontal" role="form">
+        <div class="form-group" style="display: none">
+            <label class="control-label">修改ID</label>
+            <input name="edit_id" type="text" class="form-control" value="<%= editData["id"] %>">
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">环境</label>
+            <div class="col-sm-7">
+                <input type="text" value="<%= editData["env_name"] %>" class="form-control" disabled>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">分组</label>
+            <div class="col-sm-7">
+                <input type="text" value="<%= editData["group_name"] %>" class="form-control" disabled>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">程序</label>
+            <div class="col-sm-7">
+                <input type="text" value="<%= editData["program_name"] %>" class="form-control" disabled>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">key</label>
+            <div class="col-sm-7">
+                <input name="conf_key" type="text" value="<%= editData["conf_key"] %>"
+                       class="form-control" placeholder="key">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">value</label>
+            <div class="col-sm-7">
+                <input name="conf_value" type="text" value="<%= editData["conf_value"] %>"
+                       class="form-control" placeholder="value">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-2">备注</label>
+            <div class="col-sm-7">
+                <input name="memo" type="text" value="<%= editData["memo"] %>" class="form-control"
+                       placeholder="备注">
+            </div>
+        </div>
+        <div class="form-group" style="float: right">
+            <button id="btn_conf" type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+            <button type="button" class="btn btn-primary ok" data-dismiss="modal">取消</button>
+        </div>
+    </form>
+</div>
+<script>
+    //------------------表单验证及提交------------------------------
+    //表单提交
+    $("#btn_conf").click(function () {
+        var url = "/tomcat/deployAppConf/edit";
+        var form_data = new FormData($("#form_conf_edit")[0]);
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.msg);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                $("#tb_deploy_app_conf").bootstrapTable("refresh");
+            }
+        });
+    });
+    //----------------------END-------------------------------------
+</script>

@@ -1,0 +1,114 @@
+<div class="container-fluid">
+    <form id="user_add_form" class="form-horizontal" role="form">
+        <div class="form-group">
+            <label for="inputLoginName" class="control-label col-sm-4">登录名</label>
+
+            <div class="col-sm-7">
+                <input id="inputLoginName" name="login_name" type="text" class="form-control"
+                       placeholder="登录名">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label for="inputLoginPwd" class="control-label col-sm-4">密码</label>
+
+            <div class="col-sm-7">
+                <input id="inputLoginPwd" name="login_pwd" type="text" class="form-control" placeholder="密码">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label for="inputStatus" class="control-label  col-sm-4">状态</label>
+
+            <div class="col-sm-7">
+                <select id="inputStatus" name="status" class="form-control">
+                    <option value="0">启用</option>
+                    <option value="1">禁用</option>
+                </select>
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label for="inputUserName" class="control-label col-sm-4">用户名</label>
+
+            <div class="col-sm-7">
+                <input id="inputUserName" name="user_name" type="text" class="form-control"
+                       placeholder="用户名">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputTel" class="control-label col-sm-4">电话</label>
+
+            <div class="col-sm-7">
+                <input id="inputTel" name="tel" type="text" class="form-control" placeholder="电话">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail" class="control-label col-sm-4">邮箱</label>
+
+            <div class="col-sm-7">
+                <input id="inputEmail" name="email" type="text" class="form-control" placeholder="邮箱">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputQQ" class="control-label col-sm-4">QQ</label>
+
+            <div class="col-sm-7">
+                <input id="inputQQ" name="qq" type="text" class="form-control" placeholder="QQ">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">域名/ip过滤白名单</label>
+
+            <div class="col-sm-7">
+                <input name="white_list" type="text" class="form-control" placeholder="域名/ip过滤白名单,js正则,多条件逗号分隔">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">域名/ip过滤黑名单</label>
+
+            <div class="col-sm-7">
+                <input name="black_list" type="text" class="form-control" placeholder="域名/ip过滤黑名单,js正则,多条件逗号分隔">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputMemo" class="control-label col-sm-4">备注</label>
+
+            <div class="col-sm-7">
+                <input id="inputMemo" name="memo" type="text" class="form-control" placeholder="备注">
+            </div>
+        </div>
+        <div class="form-group pull-right">
+            <button id="user_add_submit" type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+            <button type="button" class="btn btn-primary ok" data-dismiss="modal">取消</button>
+        </div>
+    </form>
+</div>
+<script>
+    $("#user_add_submit").click(function (err, result) {
+        var url = "/basic/user/add";
+        var form_data = new FormData($("#user_add_form")[0]);
+        $.ajax({
+            url: url,
+            type: 'POST',
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status == "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete:function(){
+                $("#tb_user").bootstrapTable("refresh");
+            }
+        });
+    });
+</script>

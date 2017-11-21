@@ -1,0 +1,88 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <ul id="env_name" class="nav nav-tabs">
+                <% for (var i = 0, j = envs.length;i < j;i++){ %>
+                <li><a href="#" data-value="<%= envs[i] %>" data-toggle="tab"><%= envs[i] %></a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12" style="margin-top: 15px;">
+            <% if(envs.length > 0){ %>
+            <div class="row">
+                <form class="form-inline  col-sm-12" role="form" action="">
+                    <div class="form-group">
+                        <label for="func_type" class="control-label">功能选择</label>
+                        <select id="func_type" class="form-control ">
+                            <option value="">请选择功能项</option>
+                            <% for(var op_auth in env_auth[envs[0]]){ %>
+                            <option value="<%= op_auth %>"><%= env_auth[envs[0]][op_auth] %></option>
+                            <% } %>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <% } %>
+        </div>
+    </div>
+    <div class="row">
+        <div id="func_context" class="col-sm-12" style="margin-top: 15px;min-height: 430px">
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //页title
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $func_type = $("#func_type");
+        var $func_context = $("#func_context");
+        var $tabs = $('a[data-toggle="tab"]');
+        //----------------------END-------------------------------------
+        //------------------注册页面元素--------------------------------
+        //不同环境显示不同的功能选择
+        var func_types = {};
+        <% for(let e_name in env_auth){ %>
+        func_types["<%= e_name %>"] = {};
+        <% for(let func_type in env_auth[e_name]){ %>
+        func_types["<%= e_name %>"]["<%= func_type %>"] = "<%= env_auth[e_name][func_type] %>";
+        <% } %>
+        <% } %>
+        //选项卡更换,绑定点击事件
+        $tabs.on("click", function (e) {
+            var $that = $(this);
+            $tabs.css("background-color", "");
+            $that.css("background-color", "#99FFFF");
+            var env_name = $that.attr("data-value");
+            $func_type.empty();
+            $func_context.empty();
+            $func_type.append("<option value=''>请选择功能项</option>");
+            if (typeof func_types[env_name] !== "undefined") {
+                for (var op_auth in func_types[env_name]) {
+                    $func_type.append("<option value='" + op_auth + "'>" + func_types[env_name][op_auth] + "</option>");
+                }
+            }
+        });
+        //默认选中第一个
+        if (typeof $tabs[0]) {
+            $tabs[0].click();
+        }
+        //----------------------END-------------------------------------
+        //获取功能操作页面
+        $func_type.change(function () {
+            $func_context.empty();
+            var func_type = $func_type.find("option:selected").val();
+            if (func_type === "") {
+                return;
+            }
+            var url = "/tomcat/tenantSet/getFuncContext?func_type=" + func_type;
+            $func_context.load(url);
+        });
+    });
+</script>
+<%- include('../../footer.ejs') %>

@@ -1,0 +1,125 @@
+<div class="row">
+    <div class="col-sm-8 col-sm-push-2">
+        <form id="form_card" class="form-inline col-sm-12" role="form">
+            <div class="form-group">
+                <label class="control-label">登录账号</label>
+                <input name="login_name" type="text" class="form-control" placeholder="请输入登录账号">
+                <span class="star">*</span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">卡号</label>
+                <input name="card_code" type="text" class="form-control" placeholder="卡号">
+            </div>
+            <div class="form-group">
+                <input id="card_select" type="button" class="btn btn-default" value="查询">
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row" style="margin-top: 5px;">
+    <table id="tb_card" class="table table-hover">
+    </table>
+</div>
+<script>
+    $(function () {
+        //-----------------------页面元素-------------------------------------
+        var $env_name = $("#env_name");//环境选择
+        var $func_type = $("#func_type");//功能选择
+        var $tb_card = $("#tb_card");//表格
+        var $card_select = $("#card_select");//查询按钮
+        //form
+        var $form_card = $("#form_card");//表单
+        //公共变量
+        var env_name = $env_name.find("li.active a").data("value");
+        var func_type = $func_type.find("option:selected").val();
+        //-----------------------END-------------------------------------
+        //额外参数
+        var mytable = new MyTable($tb_card, $card_select, $form_card)
+        mytable.form_data = {
+            env_name: env_name,
+            func_type: func_type
+        };
+        mytable.bootStrap.url = "/tomcat/tenantSet/operatorTenantSet";
+        mytable.bootStrap.columns = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'card_code',
+            title: '卡号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'card_type',
+            title: '类型',
+            formatter: function (value) {
+                var _re = "未知类型";
+                if (value === 1) {
+                    _re = "<span style='color:red'>母卡</span>";
+                } else if (value === 2) {
+                    _re = "<span style='color:blue'>授权卡</span>";
+                } else if (value === 4) {
+                    _re = "会员卡";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'card_state',
+            title: '状态',
+            formatter: function (value) {
+                var _re = "未知状态";
+                if (value === 0) {
+                    _re = "停用";
+                } else if (value === 1) {
+                    _re = "启动";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_name',
+            title: '商户名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_id',
+            title: '商户id'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_code',
+            title: '商户编号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_code',
+            title: '门店编号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'partition_code',
+            title: '商户分区'
+        }];
+        $card_select.click(function () {
+            // 查询前销毁之前表格，清除之前输出内容
+            $tb_card.bootstrapTable('destroy').bootstrapTable(mytable.getBootStrap());
+        });
+    });
+</script>

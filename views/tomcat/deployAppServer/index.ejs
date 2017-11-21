@@ -1,0 +1,210 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="page-title">tomcat程序部署机器信息、访问路径、docker端口映射等信息</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <form id="form_server" class="form-inline" role="form">
+                <div class="form-group">
+                    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+                    <button id="<%= operator[i]["label_id"] %>" type="button"
+                            class="btn btn-default <%= operator[i]["label_class"] == "hidden" ? "hidden" : "" %>">
+                        <span aria-hidden="true"
+                              class="<%= operator[i]["label_class"] %>"><%= operator[i]["res_name"] %></span>
+                    </button>
+                    <% } %>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">环境:</label>
+                    <select name="env_name" class="form-control" style="width: 125px">
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">分组:</label>
+                    <select name="group_name" class="form-control" style="width: 80px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">程序:</label>
+                    <select name="program_name" class="form-control" style="width: 135px">
+                        <option value="">全部</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input name="search_condition" type="text" class="form-control" placeholder="程序别名/宿主机ip">
+                    <button id="btn_query" type="button" class="btn btn-primary">查询</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+        <div class="col-sm-12">
+            <table id="tb_deploy_app_server"></table>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+    //------------------获取页面元素--------------------------------
+    var $tb_deploy_app_server = $("#tb_deploy_app_server");//表格
+    var $btn_query = $("#btn_query");//查询提交
+    var $form_server = $("#form_server");//查询表单
+    //select change
+    var $env_name = $form_server.find('select[name="env_name"]');
+    var $group_name = $form_server.find('select[name="group_name"]');
+    var $program_name = $form_server.find("select[name='program_name']");
+    //----------------------END-------------------------------------
+    //-----------------------初始化下拉控件-------------------------
+    <%- include('../initTomcatDropDownBoxIndex.ejs') %>
+    //----------------------END-------------------------------------
+    //---------------------初始化表格参数---------------------------
+    var mytable = new MyTable($tb_deploy_app_server, $btn_query, $form_server);
+    mytable.bootStrap.url = "/tomcat/deployAppServer/list";
+    mytable.bootStrap.columns = [{
+        checkbox: true
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'env_name',
+        title: '环境名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: true,
+        field: 'group_name',
+        title: '分组名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: true,
+        field: 'program_name',
+        title: '程序名称'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'alias',
+        title: '程序别名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'host_alias',
+        title: '宿主机别名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'is_disable',
+        title: '状态',
+        formatter: function (value, row, index) {
+            if (value == 0) {
+                return '启用';
+            }
+            return '<span style="color:red">禁用</span>';
+        }
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'inner_connect_test_path',
+        title: '内网连通测试',
+        formatter: function (value, row, index) {
+            var connect_test_path = "<a target= '_blank' href='" + value + "'>" + value + "</a>";
+            return connect_test_path;
+        }
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'docker_memory',
+        title: '容器最大内存'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'map_tomcat_port',
+        title: 'tomcat映射端口'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'map_ssh_port',
+        title: 'ssh映射端口'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'map_rpc_port',
+        title: 'rpc映射端口'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'host_ip',
+        title: '宿主机ip'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'host_user',
+        title: '用户名'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'host_pwd',
+        title: '密码'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'host_port',
+        title: 'ssh端口'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'tomcat_path',
+        title: '程序tomcat路径'
+    }, {
+        halign: "center",
+        align: "center",
+        sortable: false,
+        field: 'memo',
+        title: '备注'
+    }];
+    //注册表格事件
+    <% for(var i = 0, j = operator.length;i < j;i++){ %>
+    <% if(operator[i]["label_id"] == "btn_del"){ %>
+    //注册删除按钮的事件
+    $("#btn_del").click(function () {
+        mytable.delData("<%= operator[i]["res_url"] %>")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_add"){ %>
+    //注册新增按钮
+    $("#btn_add").click(function () {
+        mytable.addData("<%= operator[i]["res_url"] %>", "新增部署服务器")
+    });
+    <% }else if(operator[i]["label_id"] == "btn_edit"){ %>
+    //注册修改按钮
+    $("#btn_edit").click(function () {
+        mytable.editData("<%= operator[i]["res_url"] %>", "修改部署服务器")
+    });
+    <% } %>
+    <% } %>
+    //----------------------END-------------------------------------
+    $tb_deploy_app_server.bootstrapTable(mytable.getBootStrap());
+    //绑定查询按钮
+    $btn_query.click(function () {
+        $tb_deploy_app_server.bootstrapTable("refresh");
+    });
+</script>
+<%- include('../../footer.ejs') %>

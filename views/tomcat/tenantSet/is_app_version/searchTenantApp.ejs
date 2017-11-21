@@ -1,0 +1,175 @@
+<div class="row">
+    <label class="col-sm-12">查询商户app版本号</label>
+</div>
+<div class="row">
+    <form id="form_tenant_search" class="form-horizontal col-sm-11" role="form">
+        <div class="form-group">
+            <label class="col-sm-3 control-label">平台</label>
+            <div class="col-sm-8">
+                <select id="app_type" name="app_type" class="form-control">
+                    <option value="1">恵管家</option>
+                    <option value="2">恵掌柜</option>
+                </select>
+            </div>
+        </div>
+        <div id="div_tenant_code" class="form-group">
+            <label class="col-sm-3 control-label">商户信息</label>
+            <div class="col-sm-8">
+                <input id="tenant_code" name="tenant_code" type="text" class="form-control"
+                       placeholder="登录名、手机号、商户id">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div id="div_branch_code" class="form-group">
+            <label class="col-sm-3 control-label">门店编号</label>
+            <div class="col-sm-8">
+                <input id="branch_code" name="branch_code" type="text" class="form-control" placeholder="门店编号">
+            </div>
+        </div>
+        <div id="div_branch_id" class="form-group" style="display: none">
+            <label class="col-sm-3 control-label">门店id</label>
+            <div class="col-sm-8">
+                <input name="branch_id" type="text" class="form-control" placeholder="门店id">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <div class="col-sm-offset-3 col-sm-9">
+                <input id="btn_tenant_search" data-value="2" type="button" class="btn btn-default" value="查询"/>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    $(function () {
+        //------------------获取页面元素--------------------------------
+        var $env_name = $("#env_name");//环境选择
+        var $func_type = $("#func_type");//功能选择
+        var $form_tenant_search = $("#form_tenant_search");////表单
+        var $tb_app = $("#tb_app");//结果显示表格
+        var $btn_tenant_search = $("#btn_tenant_search");//查询商户版本号提交
+        //input(change)
+        var $app_type = $("#app_type");
+        var $div_tenant_code = $("#div_tenant_code");
+        var $div_branch_code = $("#div_branch_code");
+        var $div_branch_id = $("#div_branch_id");
+        //公共变量
+        var env_name = $env_name.find("li.active a").data("value");
+        var func_type = $func_type.find("option:selected").val();
+        //----------------------END------------------------------------
+        //---------------下拉框更改及功能提交---------------------------
+        //下拉框
+        $app_type.change(function () {
+            var app_type = $(this).find("option:selected").val();
+            $div_tenant_code.val("");
+            $div_branch_code.val("");
+            $div_branch_id.val("");
+            if (app_type === "1") {
+                $div_tenant_code.show();
+                $div_branch_code.show();
+                $div_branch_id.hide();
+            } else {
+                $div_branch_id.show();
+                $div_tenant_code.hide();
+                $div_branch_code.hide();
+            }
+        });
+        //----------------------表格------------------------------------
+        var mytable_tenant = new MyTable($tb_app, $btn_tenant_search, $form_tenant_search)
+        mytable_tenant.bootStrap.url = "/tomcat/tenantSet/operatorTenantSet";
+        mytable_tenant.bootStrap.columns = [{
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_id',
+            title: '商户id'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_code',
+            title: '商户编号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'tenant_name',
+            title: '商户名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_id',
+            title: '门店id'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_code',
+            title: '门店编号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_name',
+            title: '门店名称'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_create_at',
+            title: '门店创建时间',
+            formatter: function (value) {
+                return moment(value).utcOffset(8).format("YYYY-MM-DD HH:ss:mm");
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'partition_code',
+            title: '商户分区'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+            field: 'branch_app_version',
+            title: '版本号'
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
+//                field: 'branch_app_version',
+            title: '操作',
+            formatter: function (value, rows, index) {
+                var _re;
+                if (!rows.branch_app_version) {
+                    _re = "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal' data-target='#model_app_bind' style='color:blue' value='设置门店版本号'>";
+                } else {
+                    _re = "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal'  data-target='#model_app_unbind' style='color:red' value='清除门店版本号'>";
+                }
+                return _re;
+            }
+        }];
+        mytable_tenant.form_data = {
+            env_name: env_name,
+            func_type: func_type,
+            exec_type: $btn_tenant_search.data("value")
+        };
+        //----------------------END-------------------------------------
+        //查询商户版本号
+        $btn_tenant_search.click(function () {
+            // 查询前销毁之前表格，清除之前输出内容
+            $tb_app.bootstrapTable('destroy').bootstrapTable(mytable_tenant.getBootStrap());
+        });
+    });
+</script>

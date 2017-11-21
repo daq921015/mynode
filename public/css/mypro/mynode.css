@@ -1,0 +1,12 @@
+/*详情页标题*/
+.page-title {
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    font-size: 20px;
+    border-bottom: 1px solid #eee;
+}
+
+/*bootstrap-select太宽*/
+.self-select .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
+    width: 150px;
+}

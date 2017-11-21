@@ -1,0 +1,135 @@
+<div class="container-fluid">
+    <form id="user_edit_form" class="form-horizontal" role="form">
+        <div class="form-group" style="display: none">
+            <label class="control-label col-sm-2">ID</label>
+
+            <div class="col-sm-9">
+                <input name="edit_id" type="text" class="form-control" placeholder="用户ID"
+                       value="<%= editUser["id"] %>">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label for="inputLoginName" class="control-label col-sm-2">登录名</label>
+
+            <div class="col-sm-9">
+                <input id="inputLoginName" name="login_name" type="text" class="form-control" placeholder="登录名"
+                       value="<%= editUser["login_name"] %>">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label for="inputLoginPwd" class="control-label col-sm-2">密码</label>
+
+            <div class="col-sm-9">
+                <input id="inputLoginPwd" name="login_pwd" type="text" class="form-control" placeholder="密码"
+                       value="<%= editUser["login_pwd"] %>">
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label for="inputStatus" class="control-label col-sm-2">状态</label>
+
+            <div class="col-sm-9">
+                <select name="status" id="inputStatus" class="form-control">
+                    <% if(editUser["status"] == "0"){ %>
+                    <option value="0" selected>启用</option>
+                    <option value="1">禁用</option>
+                    <% }else{ %>
+                    <option value="0">启用</option>
+                    <option value="1" selected>禁用</option>
+                    <% } %>
+                </select>
+            </div>
+            <span class="star">*</span>
+        </div>
+        <div class="form-group">
+            <label for="inputUserName" class="control-label col-sm-2">用户名</label>
+
+            <div class="col-sm-9">
+                <input id="inputUserName" name="user_name" type="text" class="form-control" placeholder="用户名"
+                       value="<%= editUser["user_name"] %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputTel" class="control-label col-sm-2">电话</label>
+
+            <div class="col-sm-9">
+                <input id="inputTel" name="tel" type="text" class="form-control" placeholder="电话"
+                       value="<%= editUser["tel"] %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputEmail" class="control-label col-sm-2">邮箱</label>
+
+            <div class="col-sm-9">
+                <input id="inputEmail" name="email" type="text" class="form-control" placeholder="邮箱"
+                       value="<%= editUser["email"] %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputQQ" class="control-label col-sm-2">QQ</label>
+
+            <div class="col-sm-9">
+                <input id="inputQQ" name="qq" type="text" class="form-control" placeholder="QQ"
+                       value="<%= editUser["qq"] %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">域名/ip过滤白名单</label>
+
+            <div class="col-sm-7">
+                <input name="white_list" type="text" class="form-control" placeholder="域名/ip过滤白名单,js正则,多条件逗号分隔"
+                       value="<%= editUser["white_list"] %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-sm-4">域名/ip过滤黑名单</label>
+
+            <div class="col-sm-7">
+                <input name="black_list" type="text" class="form-control" placeholder="域名/ip过滤黑名单,js正则,多条件逗号分隔"
+                       value="<%= editUser["black_list"] %>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="inputMemo" class="control-label col-sm-2">备注</label>
+
+            <div class="col-sm-9">
+                <input id="inputMemo" name="memo" type="text" class="form-control" placeholder="备注"
+                       value="<%= editUser["memo"] %>">
+            </div>
+        </div>
+        <div class="form-group pull-right">
+            <button id="user_edit_submit" type="button" class="btn btn-primary" data-dismiss="modal">提交</button>
+            <button type="button" class="btn btn-default cancel" data-dismiss="modal">取消</button>
+        </div>
+    </form>
+</div>
+<script>
+    $("#user_edit_submit").on("click", function () {
+        var url = "/basic/user/edit";
+        var form_data = new FormData($("#user_edit_form")[0]);
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: form_data,
+            async: true,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+            },
+            error: function (data) {
+                toastr.warning('内部服务器错误');
+            },
+            complete: function () {
+                $("#tb_user").bootstrapTable("refresh");
+            }
+        });
+    });
+</script>

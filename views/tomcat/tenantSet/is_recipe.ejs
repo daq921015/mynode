@@ -1,0 +1,135 @@
+<div class="row">
+    <div class="col-sm-12">
+        <label>1、商户添加配方、领用入库出库功能(添加记录存入日志)</label><br>
+        <label>2、配方功能添加是针对所有门店，添加产品包branch_id为null，到期时间为总部门店到期时间</label><br>
+        <label>2、www_ali 产品id等于29的为配方、领用产品包</label>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <form id="form_recipe" class="form-horizontal" role="form">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">商户信息</label>
+                <div class="col-sm-4">
+                    <input type="text" class="form-control" name="tenant_code" placeholder="登录名、手机号、商户id"/>
+                </div>
+                <span class="star">*</span>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-6 col-sm-offset-2">
+                    <input id="btn_recipe_search" type="button" data-value="1" class="btn btn-default" value="查询">
+                    <input id="btn_recipe_add" type="button" data-value="2" class="btn btn-default" value="开始添加">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <table id="tb_recipe" class="table table-hover">
+        </table>
+    </div>
+</div>
+<script>
+    //组织显示表格
+    //------------------获取页面元素--------------------------------
+    var $env_name = $("#env_name");//环境选择
+    var $func_type = $("#func_type");//功能选择
+    var $tb_recipe = $("#tb_recipe");//结果显示表格
+    //提交按钮
+    var $btn_recipe_search = $("#btn_recipe_search");//查询提交按钮
+    var $btn_recipe_add = $("#btn_recipe_add");//开始添加提交按钮
+    //form
+    var $form_recipe = $("#form_recipe");//查询表单
+    //公共变量
+    var env_name = $env_name.find("li.active a").data("value");
+    var func_type = $func_type.find("option:selected").val();
+    //-----------------------END-------------------------------------
+    //-----------------------表格------------------------------------
+    var mytable = new MyTable($tb_recipe, $btn_recipe_search, $form_recipe)
+    mytable.bootStrap.url = "/tomcat/tenantSet/operatorTenantSet";
+    mytable.form_data = {
+        env_name: env_name,
+        func_type: func_type,
+        exec_type: $btn_recipe_search.data("value")
+    };
+    mytable.bootStrap.columns = [{
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'tenant_name',
+        title: '商户名称'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'tenant_id',
+        title: '商户id'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'tenant_name',
+        title: '商户名称'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'branch_id',
+        title: '门店id'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'goods_id',
+        title: '产品id'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'limit_date',
+        title: '到期时间'
+    }, {
+        halign: "center",
+        align: "center",
+        valign: "middle",
+        sortable: false,
+        field: 'partition_code',
+        title: '商户分区'
+    }];
+    //-----------------------END-------------------------------------
+    //-------------------注册按钮事件--------------------------------
+    $btn_recipe_search.click(function () {
+        $tb_recipe.bootstrapTable('destroy').bootstrapTable(mytable.getBootStrap());
+    });
+    $btn_recipe_add.click(function () {
+        var exec_type = $btn_recipe_add.data("value");
+        var form_data = new FormData($form_recipe[0]);
+        form_data.append("env_name", env_name);
+        form_data.append("func_type", func_type);
+        form_data.append("exec_type", exec_type);
+        form_data = form_data.ConvertToJson();
+        var url = "/tomcat/tenantSet/operatorTenantSet";
+        $.get(url, form_data, function (data, status) {
+            $btn_recipe_search.click();
+            if (status === "success") {
+                var _obj = JSON.parse(data);
+                if (_obj.status === "success") {
+                    toastr.info(_obj.data);
+                } else {
+                    toastr.warning(_obj.msg);
+                }
+                $search_recipe.click();
+            } else {
+                toastr.error('内部服务器错误');
+            }
+        });
+    });
+    //-----------------------END-------------------------------------
+</script>

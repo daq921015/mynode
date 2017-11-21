@@ -1,0 +1,180 @@
+<%- include('../../header.ejs') %>
+<%- include('../../menu.ejs') %>
+<%- include('../../sidebar.ejs') %>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-10">
+            <ul id="search_env" class="nav nav-tabs">
+                <% for (var i = 0, j = envs.length;i < j;i++){ %>
+                <li><a href="#" data-value="<%= envs[i] %>" data-toggle="tab"><%= envs[i] %></a></li>
+                <% } %>
+            </ul>
+        </div>
+    </div>
+    <div class="row">
+        <form id="form_sql_query" class="form-horizontal" role="form">
+            <div class="col-sm-9">
+            <textarea name="search_sql" class="form-control" rows="3"
+                      style="font-family: Consolas;font-size:18px;border-radius:4px;resize: vertical"></textarea>
+            </div>
+            <div class="col-sm-3">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <select name="search_db" class="form-control" style="width: auto">
+                        </select>
+                    </div>
+                    <div class="col-sm-4">
+                        <% if(typeof operator["100"] !== "undefined"){ %>
+                        <div id="export_table" class="btn-group pull-right">
+                            <button data-toggle="dropdown" class="btn btn-green dropdown-toggle">
+                                Export <i class="fa fa-angle-down"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-light pull-right">
+                                <li><a href="#" data-type="xlsx" data-table="#tb_mysql_select">导出excel</a></li>
+                                <li><a href="#" data-type="sql" data-table="#tb_mysql_select">导出sql</a></li>
+                                <li><a href="#" data-type="json" data-table="#tb_mysql_select">导出json</a></li>
+                                <li><a href="#" data-type="txt" data-table="#tb_mysql_select">导出txt</a></li>
+                            </ul>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-12">
+                        <button id="btn_query" type="button" class="btn btn-lg btn-primary"
+                                style="margin-top: 10px">执行
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <table id="tb_mysql_select" style="height: 150px">
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    $(function () {
+        //页title
+        $(document).attr("title", "<%= typeof title == "string" ? title : "首页" %>");
+        //------------------获取页面元素--------------------------------
+        var $form_sql_search = $("#form_sql_query");//查询表单
+        var $btn_query = $("#btn_query");//查询按钮
+        var $tb_mysql_select = $("#tb_mysql_select");//表格
+        var $search_env = $("#search_env");//查询环境
+        //SELECT
+        var $search_db = $form_sql_search.find('select[name="search_db"]');
+        var $search_sql = $form_sql_search.find('textarea[name="search_sql"]');
+        //环境选项卡
+        var $tabs = $('a[data-toggle="tab"]');
+        //--------------------------------------------------------------
+        //F9查询快捷键
+        $(document).keyup(function (event) {
+            if (event.keyCode === 120) {
+                $btn_query.click();
+            }
+        });
+        //快捷键清空输出台 alt+c
+        $(document).keydown(function (event) {
+            if (event.altKey && event.keyCode === 67) {
+                $search_sql.val("");
+            }
+        });
+        <% if(typeof operator["100"] !== "undefined"){ %>
+        //导出查询数据
+        $("#export_table ul li a").click(function (event) {
+            event.preventDefault();
+            var $that = $(this);
+            var exportTable = $that.data("table");
+            var type = $that.data("type");
+            $(exportTable).tableExport({
+                type: type,
+                escape: 'false'
+            });
+        });
+        <% } %>
+        //---------------环境切换----------------------------------
+        //sql查询不同环境数据库
+        var env_dbs = {};
+        <% for(var key in display_dbs){ %>
+        env_dbs["<%= key %>"] = [];
+        <% for(var i = 0, j = display_dbs[key].length;i < j;i++){ %>
+        env_dbs["<%= key %>"].push("<%= display_dbs[key][i] %>");
+        <% } %>
+        <% } %>
+        //选项卡更换,绑定点击事件
+        $tabs.on("click", function (e) {
+            var $that = $(this);
+            $tabs.css("background-color", "");
+            $that.css("background-color", "#99FFFF");
+            var env_name = $that.attr("data-value");
+            $search_db.empty();
+            if (typeof env_dbs[env_name] !== "undefined") {
+                for (var i = 0, j = env_dbs[env_name].length; i < j; i++) {
+                    $search_db.append("<option value='" + env_dbs[env_name][i] + "'>" + env_dbs[env_name][i] + "</option>");
+                }
+            }
+        });
+        //默认选中第一个
+        if (typeof $tabs[0]) {
+            $tabs[0].click();
+        }
+        //-----------------END------------------------------------
+        //-----------------表格-----------------------------------
+        var mytable = new MyTable($tb_mysql_select, $btn_query, $form_sql_search)
+        mytable.bootStrap.url = "/tomcat/mysqlData/list";
+        mytable.currentFormData = function () {
+            //获取查询sql,优先使用选取的文本
+            var getSelect = getSelectedText($search_sql[0]);
+            var selectText = getSelect[0].trim();
+            var search_sql = typeof selectText !== "undefined" && selectText !== "" ? selectText : $search_sql.val().trim();
+            //获取查询环境
+            var search_env = $search_env.find("li.active a").data("value");
+            var search_db = $search_db.find("option:selected").val();
+            //重新设置选中文本
+            var startSelect = getSelect[1]
+            var endSelect = getSelect[2]
+            setTextSelected($search_sql[0], startSelect, endSelect);
+            var temp = {
+                search_env: search_env,
+                search_db: search_db,
+                search_sql: search_sql
+            };
+            return temp;
+        };
+        //-----------------END------------------------------------
+        //绑定查询按钮
+        $btn_query.click(function () {
+            closeButton($btn_query);
+            //=====第一步：获取查询字段===========
+            var url_fields = "/tomcat/mysqlData/fields"
+            //查询参数
+            var req_data = mytable.currentFormData();
+            $.get(url_fields, req_data, function (data, status) {
+                if (!status) {
+                    toastr.error("查询字段，内部服务器错误");
+                    openButton($btn_query);
+                    return;
+                }
+                var obj = $.parseJSON(data);
+                if (obj.status !== "success") {
+                    toastr.warning(obj.msg);
+                    openButton($btn_query);
+                    return;
+                }
+                //组织查询显示字段
+                var columns = [];
+                for (var i = 0, j = obj.data.length; i < j; i++) {
+                    columns.push({"field": obj.data[i], "title": obj.data[i]});
+                }
+                mytable.bootStrap.columns = columns;
+                // 查询前销毁之前表格，清除之前输出内容
+                $tb_mysql_select.bootstrapTable(mytable.getBootStrap());
+            });
+        });
+    });
+</script>
+<%- include('../../footer.ejs') %>
