@@ -1,30 +1,30 @@
 //supervisor 进程控制路由
 module.exports = function (param, routeDir) {
-    var express = require("express");
-    var router = express.Router();
-    var authority = param.authority;
-    var async = param.async;
-    var path = param.path;
-    var _ = param.underscore._;
-    var fs = param.fs;
-    var utils = param.utils;
-    var publicmethod = param.publicmethod;
-    var Sequelize = param.Sequelize;
-    var logError = param.publicmethod.logError;
+    let express = require("express");
+    let router = express.Router();
+    let authority = param.authority;
+    let async = param.async;
+    let path = param.path;
+    let _ = param.underscore._;
+    let fs = param.fs;
+    let utils = param.utils;
+    let publicmethod = param.publicmethod;
+    let Sequelize = param.Sequelize;
+    let logError = param.publicmethod.logError;
     router.get("/getDeployAppConf", function (req, res, next) {
-        var form_data = utils.getForm(req);
-        var form_fields = form_data["fields"];
-        var sider_id = form_fields["sider_id"] || 0;
-        var from_data = _.pick(form_fields, "env_name", "group_name", "program_name");
+        let form_data = utils.getForm(req);
+        let form_fields = form_data["fields"];
+        let sider_id = form_fields["sider_id"] || 0;
+        let from_data = _.pick(form_fields, "env_name", "group_name", "program_name");
         Promise.all([
             //菜单栏
             authority.getUserSiderMenu(req),
             authority.getUserOperator(req, sider_id),
             authority.getUserTomcatResource(req, 8)
         ]).then(function (data) {
-            var menu = data[0];
-            var operator = data[1];
-            var tomcats = data[2];
+            let menu = data[0];
+            let operator = data[1];
+            let tomcats = data[2];
             res.render(routeDir + "deployAppConf/index", {
                 operator: operator,
                 tomcats: tomcats,
@@ -39,13 +39,13 @@ module.exports = function (param, routeDir) {
         });
     });
     router.get('/:action', function (req, res, next) {
-        var action = req.params.action;
-        var form_data = utils.getForm(req);
-        var form_fields = form_data["fields"];
+        let action = req.params.action;
+        let form_data = utils.getForm(req);
+        let form_fields = form_data["fields"];
         switch (action) {
             case 'list': {
-                var deploy_res_info_where = _.pick(form_fields, 'env_name', 'group_name', "program_name");
-                var deploy_app_config_where;
+                let deploy_res_info_where = _.pick(form_fields, 'env_name', 'group_name', "program_name");
+                let deploy_app_config_where;
                 if (form_fields["search_condition"]) {
                     deploy_app_config_where = {
                         $or: [
@@ -54,7 +54,7 @@ module.exports = function (param, routeDir) {
                         ]
                     }
                 }
-                var user_id = req.session.user["user_id"] || 0;
+                let user_id = req.session.user["user_id"] || 0;
                 deploy_app_config.findAndCountAll({
                     include: {
                         model: deploy_res_info,
@@ -129,7 +129,7 @@ module.exports = function (param, routeDir) {
             }
                 break;
             case 'getConfFiles': {
-                var appconfdir = path.join(__dirname, '..', '..', 'config', 'tomcat', 'appconf',
+                let appconfdir = path.join(__dirname, '..', '..', 'config', 'tomcat', 'appconf',
                     form_fields["group_name"] + "/" + form_fields["program_name"]);
                 publicmethod.getLocalReadDir(appconfdir, function (err, files) {
                     if (err) {
@@ -137,11 +137,11 @@ module.exports = function (param, routeDir) {
                         res.end(JSON.stringify({"status": "success", "msg": "", "data": []}));
                         return;
                     }
-                    var extname = ".properties.xml.yml.groovy";
-                    var filter_files = {};
-                    for (var i = 0, j = files.length; i < j; i++) {
+                    let extname = ".properties.xml.yml.groovy";
+                    let filter_files = {};
+                    for (let i = 0, j = files.length; i < j; i++) {
                         if (extname.indexOf(path.extname(files[i])) >= 0) {
-                            var file_name = path.basename(files[i]);
+                            let file_name = path.basename(files[i]);
                             filter_files[file_name] = files[i];
                         }
                     }
@@ -150,7 +150,7 @@ module.exports = function (param, routeDir) {
             }
                 break;
             case 'readConfFile': {
-                var file_path = typeof req.query["file_path"] !== "undefined" && req.query["file_path"].trim() !== "" ? req.query["file_path"].trim() : null;
+                let file_path = typeof req.query["file_path"] !== "undefined" && req.query["file_path"].trim() !== "" ? req.query["file_path"].trim() : null;
                 if (file_path === null) {
                     res.end("the conf path is not exists");
                     return;
@@ -170,7 +170,7 @@ module.exports = function (param, routeDir) {
                 res.end(JSON.stringify({"status": "error", "msg": "the addr of get request is not exist"}));
         }
     }).post("/:action", function (req, res, next) {
-        var action = req.params.action;
+        let action = req.params.action;
         async.auto({
             form_data: function (callback) {
                 utils.postForm(req, function (err, form_data) {
@@ -178,14 +178,14 @@ module.exports = function (param, routeDir) {
                 });
             }
         }, function (err, results) {
-            var form_fields = results["form_data"]["fields"];
-            var login_name = req.session.user["login_name"];
-            var user_id = req.session.user["user_id"] || 0;
+            let form_fields = results["form_data"]["fields"];
+            let login_name = req.session.user["login_name"];
+            let user_id = req.session.user["user_id"] || 0;
             form_fields["updated_by"] = login_name;
             switch (action) {
                 case 'add': {
                     form_fields["created_by"] = login_name;
-                    var deploy_res_info_where = _.pick(form_fields, "env_name", "group_name", "program_name");
+                    let deploy_res_info_where = _.pick(form_fields, "env_name", "group_name", "program_name");
                     //找出程序id
                     deploy_res_info.findOne({
                         where: deploy_res_info_where

@@ -3,18 +3,17 @@
  * Time:2017-09-28
  * by:liubanglong
  * */
-var addBlanceServer = function (param) {
+let addBlanceServer = function (param) {
     /*
      * 定时读取redis，key:deploy_tomcat,获取之前从阿里云负载均衡中踢出的服务器
      * */
-    var myredis = param.myredis;
-    var my_rpc_service = param.my_rpc_service;
-    var logError = param.publicmethod.logError;
-    var logInfo = param.publicmethod.logInfo;
-    var publicmethod = param.publicmethod;
+    let myredis = param.myredis;
+    let logError = param.publicmethod.logError;
+    let logInfo = param.publicmethod.logInfo;
+    let publicmethod = param.publicmethod;
     //由部署时存入key决定
-    var key = "deploy_tomcat";
-    var serverStorAgin = function (balance_info) {
+    let key = "deploy_tomcat";
+    let serverStorAgin = function (balance_info) {
         myredis.lpush("deploy_tomcat", JSON.stringify(balance_info));
     };
     myredis.rpop(key, function (err, data) {
@@ -25,17 +24,17 @@ var addBlanceServer = function (param) {
         if (!data) {
             return;
         }
-        var balance_info = JSON.parse(data);
-        var env_name = balance_info["env_name"];
-        var server_alias = balance_info["server_alias"];
-        var server_id = balance_info["server_id"];
-        var server_type = balance_info["server_type"];
-        var balance_id = balance_info["balance_id"];
-        var v_group_id = balance_info["v_group_id"];
-        var tunnel_ip = balance_info["tunnel_ip"];
-        var host_ip = balance_info["host_ip"];
+        let balance_info = JSON.parse(data);
+        let env_name = balance_info["env_name"];
+        let server_alias = balance_info["server_alias"];
+        let server_id = balance_info["server_id"];
+        let server_type = balance_info["server_type"];
+        let balance_id = balance_info["balance_id"];
+        let v_group_id = balance_info["v_group_id"];
+        let tunnel_ip = balance_info["tunnel_ip"];
+        let host_ip = balance_info["host_ip"];
         //获取阿里云负载均衡实例（根据环境名称）
-        var aliyunbalance = param["ali_balance_" + env_name];
+        let aliyunbalance = param["ali_balance_" + env_name];
         if (typeof aliyunbalance === "undefined") {
             logError(new Error("env_name=" + env_name + ",没有找到阿里云负载均衡对象，重新存入缓存"));
             //操作失败，再次push到缓存
@@ -44,9 +43,9 @@ var addBlanceServer = function (param) {
         }
         //检测程序是否已经完全启动 ping/ping.js
         //代理地址
-        var rpcproxy_addr = "http://" + tunnel_ip + ":3002";
+        let rpcproxy_addr = "http://" + tunnel_ip + ":3002";
         //服务器地址
-        var rpcserver_addr = "http://" + host_ip + ":3001";
+        let rpcserver_addr = "http://" + host_ip + ":3001";
         //检测tomcat启动状态
         publicmethod.execRpcServiceProxy(rpcproxy_addr, rpcserver_addr, "getProgramStatus", [], function (err, result) {
             //报错（rpc不通），重新放入
@@ -120,9 +119,9 @@ var addBlanceServer = function (param) {
 
 // 程序启动时调用此模块，加载一下定时任务
 module.exports = function (param) {
-    var schedule = param.schedule;
+    let schedule = param.schedule;
     //每10秒调用一次
-    var j = schedule.scheduleJob('*/10 * * * * *', function () {
+    let j = schedule.scheduleJob('*/10 * * * * *', function () {
         addBlanceServer(param);
     });
 };

@@ -426,7 +426,6 @@ module.exports = function (param, routeDir) {
                         return;
                     }
                     deploy_user_res.destroy({where: {user_id: form_fields["user_id"]}}).then(function (user) {
-                        console.log(JSON.stringify(tomcat_auth));
                         return deploy_user_res.bulkCreate(tomcat_auth);
                     }).then(function () {
                         res.end(JSON.stringify({"status": "success", "msg": "权限设置成功。"}));

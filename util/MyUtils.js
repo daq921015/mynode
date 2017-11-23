@@ -131,7 +131,7 @@ var myutils = function (param) {
                 }
             }
             //去除参数两边空格，如果为空则设置为null,如果为数字字符串转换成数字类型
-            for (var field_name in fields) {
+            for (let field_name in fields) {
                 if (typeof fields[field_name] === "string") {
                     fields[field_name] = fields[field_name].trim();
                 }

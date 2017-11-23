@@ -25,7 +25,7 @@ module.exports = function (req, form_data, callback) {
                 if (!data && version_no) {
                     return Promise.reject("请确认该版本号是否存在。只能设置 版本类型：正式版，并且不是pos最新版本的版本号");
                 } else {
-                    return publicmethod.getBusinessDbRoute(env_name, tenant_code,1);
+                    return publicmethod.getBusinessDbRoute(env_name, tenant_code, 1);
                 }
             }).then(function (data) {
                 var business_db = data["business_db"];
@@ -58,7 +58,7 @@ module.exports = function (req, form_data, callback) {
                 const branch_code = form_fields["branch_code"];
                 var tenant_info;
                 var business_db;
-                publicmethod.getBusinessDbRoute(env_name, tenant_code,1).then(function (data) {
+                publicmethod.getBusinessDbRoute(env_name, tenant_code, 1).then(function (data) {
                     business_db = data["business_db"];
                     tenant_info = data["tenant_info"];
                     var branch_where = branch_code ? {
@@ -101,7 +101,7 @@ module.exports = function (req, form_data, callback) {
                         callback("没有找到对应的门店");
                         return;
                     }
-                    branch_info["partition_code"] = env_name + "_zc1_erp_store";
+                    branch_info["partition_code"] = env_name + "_zc1_erp-store";
                     callback(null, {total: 1, rows: [branch_info]});
                 }).catch(function (err) {
                     callback(err);
@@ -137,6 +137,7 @@ module.exports = function (req, form_data, callback) {
             const branch_id = form_fields["branch_id"];
             const partition_code = form_fields["partition_code"];
             const version_no = form_fields["version_no"];
+            console.log(form_fields);
             global[env_name + "_z0_saas-db_app"].findOne({
                 where: {
                     version_no: version_no,

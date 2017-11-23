@@ -18,7 +18,6 @@ var setRouter = function (param, routePath) {
     if (fs.statSync(routePath).isDirectory()) {
         var routeDir = utils.getRouteDir(routePath);
     } else {
-        //TODO
         return;
     }
     //遍历文件夹下所有.js文件，做路由配置
