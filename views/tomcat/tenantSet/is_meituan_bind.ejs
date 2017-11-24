@@ -144,6 +144,27 @@
             align: "center",
             valign: "middle",
             sortable: false,
+            field: 'meituan_business',
+            title: '美团业态',
+            formatter: function (value) {
+                var _re = '未知业态';
+                console.log(value);
+                if (value === "0" || value === null) {
+                    _re = "无";
+                } else if (value === "1") {
+                    _re = "团购";
+                } else if (value === "2") {
+                    _re = "外卖";
+                } else if (value === "3") {
+                    _re = "团购、外卖";
+                }
+                return _re;
+            }
+        }, {
+            halign: "center",
+            align: "center",
+            valign: "middle",
+            sortable: false,
             field: 'meituan_token',
             title: 'meituan_token'
         }, {

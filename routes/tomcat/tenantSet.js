@@ -51,7 +51,7 @@ module.exports = function (param, routeDir) {
                     user_id: req.session.user["user_id"]
                 },
                 attributes: ["env_name", "privilege_code"],
-                order: ["env_name"],
+                order: [["env_name","desc"]],
                 raw: true
             })
         ]).then(function (data) {
