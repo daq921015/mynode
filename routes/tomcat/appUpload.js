@@ -398,7 +398,9 @@ module.exports = function (param, routeDir) {
                         "5": "/nfs/uploads/app/business" + app_business + "/www/Android/Local/",
                         "6": "/nfs/uploads/app/business" + app_business + "/www/Windows/Local/",
                         "7": "/nfs/uploads/app/business" + app_business + "/www/FPOS/",
-                        "8": "/nfs/uploads/app/business" + app_business + "/www/WPOS/"
+                        "8": "/nfs/uploads/app/business" + app_business + "/www/WPOS/",
+                        "9": "/nfs/uploads/app/business" + app_business + "/www/windownsUpdate/",
+                        "10": "/nfs/uploads/app/business" + app_business + "/www/AndroidUpdate/"
                     };
                     //手动上传的app
                     if (manual_pro === "on") {
