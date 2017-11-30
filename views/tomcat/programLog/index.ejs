@@ -130,22 +130,21 @@
             field: 'formatted_message',
             title: 'formatted_message',
             cellStyle: function cellStyle(value, row, index) {
+                return {
+                    css: {
+                        "max-width": "1000px",
+                        "word-wrap": "break-word"
+                    }
+                };
+            },
+            formatter: function (value, row, index) {
                 var color = "black";
                 if (row["level_string"] == "ERROR") {
                     color = "red";
                 } else if (row["level_string"] == "WARN") {
                     color = "#BBBB00";
                 }
-                return {
-                    css: {
-                        "max-width": "1000px",
-                        "word-wrap": "break-word",
-                        "color": color
-                    }
-                };
-            },
-            formatter: function (value, row, index) {
-                return value.replace(/<[^<>]+?>/g, '');
+                return '<pre style="color:' + color + '">' + value + '</pre>';
             }
         }, {
             halign: "center",

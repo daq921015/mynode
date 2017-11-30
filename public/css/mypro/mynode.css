@@ -10,3 +10,15 @@
 .self-select .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
     width: 150px;
 }
+
+td pre {
+    white-space: pre-wrap; /*css-3*/
+    white-space: -moz-pre-wrap; /*Mozilla,since1999*/
+    white-space: -o-pre-wrap; /*Opera7*/
+    word-wrap: break-word; /*InternetExplorer5.5+*/
+    margin: -3px;
+    padding: 0;
+    width: auto;
+    border: none;
+    background-color: inherit;
+}
