@@ -169,6 +169,7 @@ module.exports = function (param, routeDir) {
                 }
                     break;
                 case 'edit': {
+                    console.log(form_fields);
                     deploy_app_server.update(form_fields, {
                         where: {id: ~~form_fields["edit_id"] || 0}
                     }).then(function (data) {

@@ -554,37 +554,41 @@ module.exports = function (param, routeDir) {
                         }
                     ]
                 }, function (err, results) {
-                    if (results["conns"]) {
-                        var conns = results["conns"];
-                        if (conns[1]) {
-                            conns[1].end();
-                        }
-                        if (conns[0]) {
-                            conns[0].end();
-                        }
-                    }
-                    //部署没有报错，记录部署日志
-                    var deploy_server = server;
-                    var deploy_info = {
-                        res_info_id: deploy_server["res_info_id"],
-                        app_server_id: app_server_id,
-                        env_name: env_name,
-                        group_name: group_name,
-                        program_name: program_name,
-                        apptype: apptype,
-                        appversion: appversion,
-                        user_name: user_name,
-                        alias: deploy_server["alias"],
-                        host_ip: deploy_server["host_ip"],
-                        host_alias: deploy_server["host_alias"]
-                    };
                     if (err) {
-                        deploy_info["deploy_result"] = "失败";
+                        reject(err);
                     } else {
-                        deploy_info["deploy_result"] = "成功";
+                        if (results["conns"]) {
+                            var conns = results["conns"];
+                            if (conns[1]) {
+                                conns[1].end();
+                            }
+                            if (conns[0]) {
+                                conns[0].end();
+                            }
+                        }
+                        //部署没有报错，记录部署日志
+                        var deploy_server = server;
+                        var deploy_info = {
+                            res_info_id: deploy_server["res_info_id"],
+                            app_server_id: app_server_id,
+                            env_name: env_name,
+                            group_name: group_name,
+                            program_name: program_name,
+                            apptype: apptype,
+                            appversion: appversion,
+                            user_name: user_name,
+                            alias: deploy_server["alias"],
+                            host_ip: deploy_server["host_ip"],
+                            host_alias: deploy_server["host_alias"]
+                        };
+                        if (err) {
+                            deploy_info["deploy_result"] = "失败";
+                        } else {
+                            deploy_info["deploy_result"] = "成功";
+                        }
+                        deploy_app_history.create(deploy_info);
+                        resolve("部署程序，执行完毕");
                     }
-                    deploy_app_history.create(deploy_info);
-                    resolve("部署程序，执行完毕");
                 });
             });
         });
