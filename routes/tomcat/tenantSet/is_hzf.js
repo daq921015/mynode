@@ -12,7 +12,7 @@ var getTenantHzfInfo = function (req, form_data, callback) {
     var tenant_code = form_fields["tenant_code"];
     var branch_code = form_fields["branch_code"];
     var business_db, tenant_info, hzf_info;
-    publicmethod.getBusinessDbRoute(env_name, tenant_code,1).then(function (data) {
+    publicmethod.getBusinessDbRoute(env_name, tenant_code, 1).then(function (data) {
         business_db = data["business_db"];
         tenant_info = data["tenant_info"];
         return global[env_name + "_z0_saas-db_s_pay_account"].findAll({
@@ -29,7 +29,10 @@ var getTenantHzfInfo = function (req, form_data, callback) {
         hzf_info = data;
         var branch_where = branch_code ? {
             tenant_id: tenant_info["tenant_id"],
-            code: branch_code,
+            $or: {
+                code: branch_code,
+                phone: branch_code
+            },
             is_deleted: 0
         } : {
             tenant_id: tenant_info["tenant_id"],
