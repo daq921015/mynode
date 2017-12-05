@@ -72,7 +72,7 @@ module.exports = function (param, routeDir) {
                     where: deploy_app_config_where,
                     limit: ~~form_fields["limit"] || 0,
                     offset: ~~form_fields["offset"] || 0,
-                    order: [[deploy_res_info, "group_name", 'asc'], [deploy_res_info, "program_name", 'asc']],
+                    order: [[deploy_res_info, "group_name", 'asc'], [deploy_res_info, "program_name", 'asc'], "alias"],
                     raw: true
                 }).then(function (data) {
                     //手动生成 合并数据列，程序访问地址,测试地址

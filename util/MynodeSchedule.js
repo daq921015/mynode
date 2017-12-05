@@ -47,13 +47,7 @@ let addBlanceServer = function (param) {
         //服务器地址
         let rpcserver_addr = "http://" + host_ip + ":3001";
         //检测tomcat启动状态
-        publicmethod.execRpcServiceProxy(rpcproxy_addr, rpcserver_addr, "getProgramStatus", [], function (err, result) {
-            //报错（rpc不通），重新放入
-            if (err) {
-                logError(err);
-                serverStorAgin(balance_info);
-                return;
-            }
+        publicmethod.execRpcServiceProxy(rpcproxy_addr, rpcserver_addr, "getProgramStatus", []).then(result => {
             //启动完成（约定信息：返回信息中有ok，说明启动完成。有req_error，tomcat没有启动，rpcServer没有启动等，返回这个信息则
             // 服务器基本无法再次加入负载均衡中，需要人工处理。req_timeout:tomcat正在启动中，没有启动完成）
             logInfo("阿里云负载均衡定时任务，检测返回结果：" + result + "。详细信息：env_name=" + env_name + ",server_alias=" + server_alias + ",server_id=" + server_id +
@@ -113,6 +107,9 @@ let addBlanceServer = function (param) {
                 serverStorAgin(balance_info);
                 return;
             }
+        }).catch(err => {
+            logError(err);
+            serverStorAgin(balance_info);
         });
     });
 };
