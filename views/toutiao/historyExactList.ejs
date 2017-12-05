@@ -116,6 +116,7 @@
         var $form_history_exact = $("#form_history_exact");//查询表单
         var $tb_history_exact = $('#tb_history_exact');//表格
         var $btn_query = $("#btn_query");//查询按钮
+        var $btn_export = $("#btn_export");//导出
         //表单内容
         var $channel = $form_history_exact.find("select[name='channel']");
         var $toutiao_number = $form_history_exact.find("select[name='toutiao_number']");
@@ -287,7 +288,30 @@
         $tb_history_exact.bootstrapTable(mytable.getBootStrap());
         //注册工具按钮
         <% for(var i = 0, j = operator.length;i < j;i++){ %>
-        <% if(operator[i]["label_id"] == "btn_import"){ %>
+        <% if(operator[i]["label_id"] == "btn_export"){ %>
+        //注册导出按钮
+        $btn_export.click(function () {
+            closeButton($btn_export)
+            $btn_export.find("span").html("正在导出,请等待..");
+            var form_data = new FormData($form_history_exact[0]);
+            var data = _.extend(form_data.ConvertToJson(), mytable.currentFormData())
+            var url = "<%= operator[i]["res_url"] %>";
+            $.get(url, data, function (data, status) {
+                if (status) {
+                    var obj = $.parseJSON(data);
+                    if (obj.status === "success") {
+                        $.makeJsForm(url, 'post', {zip_file_path: obj.data});
+                    } else {
+                        toastr.warning(obj.msg);
+                    }
+                } else {
+                    toastr.error("导出内部服务器错误！");
+                }
+                openButton($btn_export)
+                $btn_export.find("span").html("导出");
+            });
+        });
+        <% } else if(operator[i]["label_id"] == "btn_import"){ %>
         //注册导入按钮
         $("#btn_import").click(function () {
             mytable.addData("<%= operator[i]["res_url"] %>", "导入精确数据");

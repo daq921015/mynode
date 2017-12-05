@@ -48,40 +48,40 @@ module.exports = function (param, routeDir) {
             var action = req.params.action;
             var form_data = utils.getForm(req);
             var form_fields = form_data["fields"];
+            var start_create_time = form_fields["start_create_time"];
+            var end_create_time = form_fields["end_create_time"];
+            var goods_clicks = form_fields["goods_clicks"];
+            var article_author = form_fields["article_author"];
+            var read_count = form_fields["read_count"];
+            var channel = form_fields["channel"];
+            var toutiao_number = form_fields["toutiao_number"];
+            var name = form_fields["name"];
+            var toutiao_exact_article_where = {
+                create_time: {$between: [start_create_time, end_create_time]},
+            };
+            if (name) {
+                toutiao_exact_article_where["name"] = {$like: "%" + name.toString() + "%"};
+            }
+            if (read_count) {
+                toutiao_exact_article_where["read_count"] = {$gte: read_count || 0};
+            }
+            if (goods_clicks) {
+                toutiao_exact_article_where["goods_clicks"] = {$gte: goods_clicks || 0};
+            }
+            if (channel) {
+                toutiao_exact_article_where["channel"] = {$in: channel.split(",")};
+            }
+            if (toutiao_number) {
+                toutiao_exact_article_where["toutiao_number"] = {$in: toutiao_number.split(",")};
+            }
+            if (article_author) {
+                toutiao_exact_article_where["article_author"] = article_author;
+            }
             switch (action) {
                 case 'list': {
-                    var start_create_time = form_fields["start_create_time"];
-                    var end_create_time = form_fields["end_create_time"];
-                    var goods_clicks = form_fields["goods_clicks"];
-                    var article_author = form_fields["article_author"];
-                    var read_count = form_fields["read_count"];
-                    var channel = form_fields["channel"];
-                    var toutiao_number = form_fields["toutiao_number"];
-                    var name = form_fields["name"];
                     if (!start_create_time || !end_create_time) {
                         res.end(JSON.stringify({"status": "error", "msg": "查询参数缺失"}));
                         return;
-                    }
-                    var toutiao_exact_article_where = {
-                        create_time: {$between: [start_create_time, end_create_time]},
-                    };
-                    if (name) {
-                        toutiao_exact_article_where["name"] = {$like: "%" + name.toString() + "%"};
-                    }
-                    if (read_count) {
-                        toutiao_exact_article_where["read_count"] = {$gte: read_count || 0};
-                    }
-                    if (goods_clicks) {
-                        toutiao_exact_article_where["goods_clicks"] = {$gte: goods_clicks || 0};
-                    }
-                    if (channel) {
-                        toutiao_exact_article_where["channel"] = {$in: channel.split(",")};
-                    }
-                    if (toutiao_number) {
-                        toutiao_exact_article_where["toutiao_number"] = {$in: toutiao_number.split(",")};
-                    }
-                    if (article_author) {
-                        toutiao_exact_article_where["article_author"] = article_author;
                     }
                     toutiao_exact_article.findAndCountAll({
                         where: toutiao_exact_article_where,
@@ -95,6 +95,47 @@ module.exports = function (param, routeDir) {
                             "msg": "",
                             "data": {"total": data["count"], "rows": data["rows"]}
                         }));
+                    }).catch(function (err) {
+                        res.end(JSON.stringify({"status": "error", "msg": logError(err)}));
+                    });
+                }
+                    break;
+                case 'download': {
+                    if (!start_create_time || !end_create_time) {
+                        res.end(JSON.stringify({"status": "error", "msg": "查询参数缺失"}));
+                        return;
+                    }
+                    toutiao_exact_article.count({
+                        col: ["id"],
+                        where: toutiao_exact_article_where,
+                        raw: true
+                    }).then(function (data) {
+                        var max_export = 80000;
+                        if (data >= max_export) {
+                            return Promise.reject("导出数据量不符合要求，最高导出不能超过" + max_export + "条。当前数量：" + data);
+                        } else {
+                            return toutiao_exact_article.findAll({
+                                where: toutiao_exact_article_where,
+                                attributes: ["name", "channel", "toutiao_number", "article_author", "type", "create_time", "recommend_count", "read_count",
+                                    "read_percent", "goods_clicks", "goods_clicks_percent", "dislike_count", "dislike_count_percent", "link",
+                                    "hour", "week", "created_at"],
+                                raw: true
+                            });
+                        }
+                    }).then(function (data) {
+                        var fields = ["标题", "频道", "头条号", "作者", "类型", "上线时间", "推荐数", "阅读数", "阅读率", "商品点击数",
+                            "商品点击率", "dislike数", "dislike率", "链接", "小时", "星期", "导入时间"];
+                        for (var i = 0, j = data.length; i < j; i++) {
+                            data[i]["create_time"] = moment(data[i]["create_time"]).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+                            data[i]["created_at"] = moment(data[i]["created_at"]).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+                            var article_id_array = data[i]["link"].match(/id\s*=\s*(\d*)\s*$/);
+                            if (!(article_id_array === null || typeof article_id_array === "undefined" || article_id_array.length !== 2)) {
+                                data[i]["link"] = 'https://temai.snssdk.com/article/feed/index?id=' + article_id_array[1];
+                            }
+                        }
+                        return publicmethod.wirteToExcel(data, fields);
+                    }).then(function (data) {
+                        res.end(JSON.stringify({"status": "success", "msg": "", "data": data}));
                     }).catch(function (err) {
                         res.end(JSON.stringify({"status": "error", "msg": logError(err)}));
                     });
@@ -218,6 +259,15 @@ module.exports = function (param, routeDir) {
                 }).catch(function (err) {
                     res.end(JSON.stringify({"status": "error", "msg": logError(err)}));
                 });
+            }
+                break;
+            case 'download': {
+                var zip_file_path = req.body["zip_file_path"];
+                if (!zip_file_path) {
+                    res.end(JSON.stringify({"status": "error", "msg": "arg error"}));
+                    return;
+                }
+                res.download(zip_file_path);
             }
                 break;
             default:

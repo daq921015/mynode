@@ -85,7 +85,7 @@ module.exports = function (param, routeDir) {
                         where: toutiao_article_where,
                         raw: true
                     }).then(function (data) {
-                        var max_export = 40000;
+                        var max_export = 80000;
                         if (data >= max_export) {
                             return Promise.reject("导出数据量不符合要求，最高导出不能超过" + max_export + "条。当前数量：" + data);
                         } else {
@@ -97,6 +97,10 @@ module.exports = function (param, routeDir) {
                         }
                     }).then(function (data) {
                         var fields = ["标题", "阅读量", "评论数", "上线时间", "链接", "频道", "类型", "小时", "星期", "导入时间"];
+                        for (var i = 0, j = data.length; i < j; i++) {
+                            data[i]["create_time"] = moment(data[i]["create_time"]).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+                            data[i]["created_at"] = moment(data[i]["created_at"]).utcOffset(8).format("YYYY-MM-DD HH:mm:ss");
+                        }
                         return publicmethod.wirteToExcel(data, fields);
                     }).then(function (data) {
                         res.end(JSON.stringify({"status": "success", "msg": "", "data": data}));
