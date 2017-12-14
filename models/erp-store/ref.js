@@ -78,6 +78,7 @@ module.exports = function (options, table_prefix) {
     global[table_prefix + "_vip"] = vip;
     global[table_prefix + "_sale"] = sale;
     global[table_prefix + "_vip_trade_history"] = vip_trade_history;
+    global[table_prefix + "_tmp_sale_carry_over"] = tmp_sale_carry_over;
     global[table_prefix] = sequelize;
     //--------------------------------------END----------------------------------------------------
 };
