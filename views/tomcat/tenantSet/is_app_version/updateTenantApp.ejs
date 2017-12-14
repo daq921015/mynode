@@ -118,16 +118,27 @@
                 success: function (data) {
                     var _obj = JSON.parse(data);
                     if (_obj.status === "success") {
-                        toastr.info(_obj.data);
+                        let index = -1;
+                        let table_data = $tb_app.bootstrapTable('getData');
+                        for (let i = 0, j = table_data.length; i < j; i++) {
+                            if (arrselections[0]["branch_id"] === table_data[i]["branch_id"]) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        $tb_app.bootstrapTable('updateRow', {
+                            "index": index,
+                            "row": {
+                                branch_app_version: _obj.data["version_no"]
+                            }
+                        });
+                        toastr.info(_obj.data["msg"]);
                     } else {
                         toastr.warning(_obj.msg);
                     }
                 },
                 error: function (data) {
                     toastr.warning('内部服务器错误');
-                },
-                complete: function () {
-                    $btn_tenant_search.click();
                 }
             });
         });
@@ -159,6 +170,20 @@
                 success: function (data) {
                     var _obj = JSON.parse(data);
                     if (_obj.status === "success") {
+                        let index = -1;
+                        let table_data = $tb_app.bootstrapTable('getData');
+                        for (let i = 0, j = table_data.length; i < j; i++) {
+                            if (arrselections[0]["branch_id"] === table_data[i]["branch_id"]) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        $tb_app.bootstrapTable('updateRow', {
+                            "index": index,
+                            "row": {
+                                branch_app_version: ""
+                            }
+                        });
                         toastr.info(_obj.data);
                     } else {
                         toastr.warning(_obj.msg);
@@ -167,9 +192,6 @@
                 error: function (data) {
                     toastr.warning('内部服务器错误');
                 },
-                complete: function () {
-                    $btn_tenant_search.click();
-                }
             });
         });
     });

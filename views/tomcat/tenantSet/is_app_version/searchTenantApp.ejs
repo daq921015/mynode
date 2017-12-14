@@ -78,6 +78,8 @@
         var mytable_tenant = new MyTable($tb_app, $btn_tenant_search, $form_tenant_search)
         mytable_tenant.bootStrap.url = "/tomcat/tenantSet/operatorTenantSet";
         mytable_tenant.bootStrap.columns = [{
+            checkbox: true
+        }, {
             halign: "center",
             align: "center",
             valign: "middle",
@@ -153,7 +155,7 @@
             formatter: function (value, rows, index) {
                 var _re;
                 if (!rows.branch_app_version) {
-                    _re = "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal' data-target='#model_app_bind' style='color:blue' value='设置门店版本号'>";
+                    _re = "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal'  data-target='#model_app_bind' style='color:blue' value='设置门店版本号'>";
                 } else {
                     _re = "<input type='button' class='btn btn-default btn-sm'  data-toggle='modal'  data-target='#model_app_unbind' style='color:red' value='清除门店版本号'>";
                 }

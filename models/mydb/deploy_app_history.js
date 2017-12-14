@@ -66,8 +66,6 @@ module.exports = function (sequelize, DataTypes) {
         },
         deploy_time: {
             type: DataTypes.DATE,
-            allowNull: false,
-            defaultValue: new Date(),
             comment: "部署时间"
         },
         deploy_result: {

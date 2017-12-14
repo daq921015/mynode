@@ -95,17 +95,17 @@ let addBlanceServer = function (param) {
                     return;
                 }
             } else if (/req_timeout/.test(result)) {
+                console.log("重新存入req_timeout");
                 //启动未完成，重新加入队列
                 serverStorAgin(balance_info);
-                return;
             } else if (/req_error/.test(result)) {
+                console.log("重新存入req_error");
                 //检测有错误，重新加入队列
                 serverStorAgin(balance_info);
-                return;
             } else {
+                console.log("重新存入other_error");
                 //检测有错误，重新加入队列
                 serverStorAgin(balance_info);
-                return;
             }
         }).catch(err => {
             logError(err);

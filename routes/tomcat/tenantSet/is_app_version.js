@@ -137,7 +137,6 @@ module.exports = function (req, form_data, callback) {
             const branch_id = form_fields["branch_id"];
             const partition_code = form_fields["partition_code"];
             const version_no = form_fields["version_no"];
-            console.log(form_fields);
             global[env_name + "_z0_saas-db_app"].findOne({
                 where: {
                     version_no: version_no,
@@ -169,7 +168,7 @@ module.exports = function (req, form_data, callback) {
             }).then(function (data) {
                 var op_content = "修改门店版本号:env_name=" + env_name + ",partition_code=" + partition_code + ",branch_id=" + branch_id + ",app_type=" + app_type + ",app_business=" + app_business + ",version_no=" + version_no;
                 publicmethod.setSysFuncOpertor(req, op_content);
-                callback(null, "指定门店，版本号修改完成,更新门店数：" + data);
+                callback(null, {"msg": "指定门店，版本号修改完成,更新门店数：" + data, "version_no": version_no});
             }).catch(function (err) {
                 callback(err);
             });

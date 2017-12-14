@@ -147,7 +147,8 @@ module.exports = function (param, routeDir) {
                                     break;
                                 }
                             }
-                            data[i][m] = "'" + data[i][m] + "'";
+                            //信息两侧加单引号，数据单引号加斜线
+                            data[i][m] = "'" + data[i][m].toString().replace("'", "\\'") + "'";
                         }
                         if (data_judge) {
                             insert_data.push("(" + data[i].join(",") + ")");
@@ -171,6 +172,7 @@ module.exports = function (param, routeDir) {
                         force: true,
                         raw: true
                     }).then(function (data) {
+                        console.log(sql);
                         return mydbSource.query(sql, {type: Sequelize.QueryTypes.INSERT});
                     });
 
