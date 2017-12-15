@@ -12,7 +12,10 @@ module.exports = function (sequelize, DataTypes) {
         },
         tenant_id: DataTypes.BIGINT(20),
         sale_count: DataTypes.BIGINT(20),
-        sale_total_amount: {type: DataTypes.DECIMAL(11, 3)},
+        vip_count: DataTypes.BIGINT(20),
+        branch_count: DataTypes.BIGINT(20),
+        sale_amount: {type: DataTypes.DECIMAL(11, 3)},
+        vip_trade_amount: {type: DataTypes.DECIMAL(11, 3)},
         sale_date: DataTypes.DATEONLY
     });
 };
