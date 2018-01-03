@@ -70,7 +70,8 @@ module.exports = function (req, form_data, callback) {
                     tenant_id: tenant_info["tenant_id"],
                     branch_id: null,
                     goods_id: 29,
-                    limit_date: data["limit_date"],
+                    // limit_date: data["limit_date"],
+                    limit_date: '1900-01-01',
                     is_deleted: 0
                 });
             }).then(function (data) {

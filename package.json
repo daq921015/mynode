@@ -34,6 +34,7 @@
     "ssh2": "0.4.15",
     "through": "2.3.8",
     "underscore": "1.8.3",
-    "zip-local": "0.3.4"
+    "zip-local": "0.3.4",
+    "node_xlsx": "0.7.4"
   }
 }

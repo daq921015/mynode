@@ -75,6 +75,7 @@ function MyTable($tb, $btn, $form) {
         cardView: false,                    //是否显示详细视图
         detailView: false,                   //是否显示父子表
         searchOnEnterKey: false,
+        escape: true,
         rowStyle: function rowStyle(row, index) {
             return {
                 css: {
