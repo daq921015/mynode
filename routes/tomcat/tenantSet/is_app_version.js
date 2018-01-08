@@ -16,7 +16,6 @@ module.exports = function (req, form_data, callback) {
                 where: {
                     version_no: version_no,
                     type: app_type,
-                    business: app_business,
                     is_latest: 0,
                     is_deleted: 0
                 },
@@ -141,7 +140,6 @@ module.exports = function (req, form_data, callback) {
                 where: {
                     version_no: version_no,
                     type: app_type,
-                    business: app_business,
                     is_latest: 0,
                     is_deleted: 0
                 },
