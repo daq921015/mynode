@@ -538,11 +538,17 @@ module.exports = function (param, routeDir) {
                                     callback(null);
                                     return;
                                 }
+                                let _where = {
+                                    type: app_type,
+                                    is_deleted: 0
+                                };
+                                if (app_business !== "common") {
+                                    _where["app_business"] = app_business;
+                                } else {
+                                    _where["app_business"] = {"$in": [1, 5, 6]};
+                                }
                                 global[env_name + "_z0_saas-db_app"].update(sql_option, {
-                                    where: {
-                                        type: app_type,
-                                        is_deleted: 0
-                                    },
+                                    where: _where,
                                     raw: true
                                 }).then(function (data) {
                                     callback(null);
@@ -557,28 +563,81 @@ module.exports = function (param, routeDir) {
                                 var saas_db = results["saas_db"];
                                 var file_md5 = results["file_md5"];
                                 var login_name = req.session.user["login_name"];
-                                var insert_data = {
-                                    app_name: program_name,
-                                    version_no: version_no,
-                                    app_type: app_type,
-                                    app_notes: notes,
-                                    file_md5: file_md5,
-                                    file_path: remote_file_path,
-                                    app_business: app_business,
-                                    create_by: login_name,
-                                    is_force_update: app_is_forceUpdate,
-                                    is_latest: app_is_latest,
-                                    is_web_latest: app_is_WebLatest,
-                                    app_create_by: login_name,
-                                    is_deleted: 0
-                                };
-                                global[env_name + "_z0_saas-db_app"].create(insert_data, {
-                                    raw: true
-                                }).then(function (data) {
-                                    callback(null);
-                                }).catch(function (err) {
-                                    callback(err);
-                                });
+                                if (app_business !== "common") {
+                                    var insert_data = {
+                                        app_name: program_name,
+                                        version_no: version_no,
+                                        app_type: app_type,
+                                        app_notes: notes,
+                                        file_md5: file_md5,
+                                        file_path: remote_file_path,
+                                        app_business: app_business,
+                                        create_by: login_name,
+                                        is_force_update: app_is_forceUpdate,
+                                        is_latest: app_is_latest,
+                                        is_web_latest: app_is_WebLatest,
+                                        app_create_by: login_name,
+                                        is_deleted: 0
+                                    };
+                                    global[env_name + "_z0_saas-db_app"].create(insert_data, {
+                                        raw: true
+                                    }).then(function (data) {
+                                        callback(null);
+                                    }).catch(function (err) {
+                                        callback(err);
+                                    });
+                                } else {
+                                    var insert_data_bulk = [{
+                                        app_business: 1,
+                                        app_name: program_name,
+                                        version_no: version_no,
+                                        app_type: app_type,
+                                        app_notes: notes,
+                                        file_md5: file_md5,
+                                        file_path: remote_file_path,
+                                        create_by: login_name,
+                                        is_force_update: app_is_forceUpdate,
+                                        is_latest: app_is_latest,
+                                        is_web_latest: app_is_WebLatest,
+                                        app_create_by: login_name,
+                                        is_deleted: 0
+                                    }, {
+                                        app_business: 5,
+                                        app_name: program_name,
+                                        version_no: version_no,
+                                        app_type: app_type,
+                                        app_notes: notes,
+                                        file_md5: file_md5,
+                                        file_path: remote_file_path,
+                                        create_by: login_name,
+                                        is_force_update: app_is_forceUpdate,
+                                        is_latest: app_is_latest,
+                                        is_web_latest: app_is_WebLatest,
+                                        app_create_by: login_name,
+                                        is_deleted: 0
+                                    }, {
+                                        app_business: 6,
+                                        app_name: program_name,
+                                        version_no: version_no,
+                                        app_type: app_type,
+                                        app_notes: notes,
+                                        file_md5: file_md5,
+                                        file_path: remote_file_path,
+                                        create_by: login_name,
+                                        is_force_update: app_is_forceUpdate,
+                                        is_latest: app_is_latest,
+                                        is_web_latest: app_is_WebLatest,
+                                        app_create_by: login_name,
+                                        is_deleted: 0
+                                    }];
+                                    global[env_name + "_z0_saas-db_app"].bulkCreate(insert_data_bulk, {
+                                        raw: true
+                                    }).then(function (data) {
+                                        callback(null);
+                                    }).catch(function (err) {
+                                        callback(err);
+                                    });
+                                }
                             }
                         ]
                     }, function (err, results) {
