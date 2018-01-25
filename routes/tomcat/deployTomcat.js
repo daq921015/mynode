@@ -518,7 +518,7 @@ module.exports = function (param, routeDir) {
                     delDockerContainer: [
                         'conns',
                         function (results, callback) {
-                            var container_exists = env_name + "-" + group_name + "-" + alias;
+                            var container_exists = env_name + "-" + group_name + "-" + group_name + "-" + alias;
                             var docker_stop = "docker rm -f `docker ps -a |grep " + container_exists + "|awk '{print $NF}'`";
                             myssh.execRemoteCmd(results["conns"][1], docker_stop, function (err) {
                                 callback(err);
@@ -539,7 +539,7 @@ module.exports = function (param, routeDir) {
                             var map_rpc_port = deployServerInfo["map_rpc_port"];
                             var main_redis_ip = deployServerInfo["main_redis_ip"];
                             var main_redis_pwd = deployServerInfo["main_redis_pwd"];
-                            var container_name = env_name + "-" + group_name + "-" + alias + "-" + appversion;
+                            var container_name = env_name + "-" + group_name + "-" + group_name + "-" + alias + "-" + appversion;
                             //启动部署容器
                             var docker_start = "date";
                             if (program_name == "saas-gateway") {
