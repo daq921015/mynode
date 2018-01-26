@@ -176,17 +176,18 @@
                 var _result = "";
                 var app_id = row["app_id"];
                 var app_type = row["app_type"];
+                var app_business = row["app_business"];
                 if (row["is_latest"] === 0) {
-                    _result = _result + '<input name="btn_operator" type="button" data-value="3" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置pos最新">';
+                    _result = _result + '<input name="btn_operator" type="button" data-value="3" data-app-business="' + app_business + '"  data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置pos最新">';
                 }
                 if (row["is_web_latest"] === 0) {
-                    _result = _result + '<input name="btn_operator" type="button" data-value="4" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置网站最新">';
+                    _result = _result + '<input name="btn_operator" type="button" data-value="4" data-app-business="' + app_business + '"  data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置网站最新">';
                 }
                 if (row["is_force_update"] === 0) {
-                    _result = _result + '<input name="btn_operator" type="button" data-value="5" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置强制升级">';
+                    _result = _result + '<input name="btn_operator" type="button" data-value="5" data-app-business="' + app_business + '"  data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="设置强制升级">';
                 }
                 if (row["is_force_update"] === 1) {
-                    _result = _result + '<input name="btn_operator" type="button" data-value="6" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="取消强制升级">';
+                    _result = _result + '<input name="btn_operator" type="button" data-value="6" data-app-business="' + app_business + '"  data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="取消强制升级">';
                 }
                 return _result;
             }
@@ -201,7 +202,8 @@
                 var _result = "";
                 var app_id = row["app_id"];
                 var app_type = row["type"];
-                _result = _result + '<input name="btn_operator" type="button" data-value="8" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="删除">';
+                var app_business = row["business"];
+                _result = _result + '<input name="btn_operator" type="button" data-value="8" data-app-business="' + app_business + '" data-app-id="' + app_id + '" data-app-type="' + app_type + '" class="btn btn-default btn-sm" value="删除">';
                 return _result;
             }
         }];
@@ -212,12 +214,14 @@
                 var operator = $that.data("value");
                 var app_id = $that.data("appId");
                 var app_type = $that.data("appType");
+                var app_business = $that.data("appBusiness");
                 var url = "/tomcat/appUpload/appUploadOperator";
                 var data = {
                     env_name: env_name,
                     operator: operator,
                     app_id: app_id,
-                    app_type: app_type
+                    app_type: app_type,
+                    app_business: app_business
                 }
                 async.auto({
                     operator_type: function (callback) {

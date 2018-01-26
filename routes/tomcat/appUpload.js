@@ -86,12 +86,14 @@ module.exports = function (param, routeDir) {
             //设置pos最新
             case '3': {
                 const app_id = form_fields["app_id"] || 0;
+                const app_business = form_fields["app_business"];
                 const app_type = form_fields["app_type"] || 0;
                 global[env_name + "_z0_saas-db_app"].update({
                     is_latest: 0
                 }, {
                     where: {
                         type: app_type,
+                        app_business: app_business,
                         is_deleted: 0
                     },
                     raw: true
@@ -115,12 +117,14 @@ module.exports = function (param, routeDir) {
             //设置网站最新
             case '4': {
                 const app_id = form_fields["app_id"] || 0;
+                const app_business = form_fields["app_business"];
                 const app_type = form_fields["app_type"] || 0;
                 global[env_name + "_z0_saas-db_app"].update({
                     is_web_latest: 0
                 }, {
                     where: {
                         type: app_type,
+                        app_business: app_business,
                         is_deleted: 0
                     },
                     raw: true
