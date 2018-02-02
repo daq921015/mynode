@@ -1,0 +1,43 @@
+server:
+    port: 9090
+endpoints:
+    jmx:
+        enabled: false
+        unique-names: true
+        version: '$appversion'
+---
+spring:
+    jmx:
+        enabled: false
+    datasource:
+        name: saas
+        url: jdbc:mysql://$erp_chain_ip:$erp_chain_port/erp-chain
+        username: $erp_chain_user
+        password: $erp_chain_pwd
+        type: com.alibaba.druid.pool.DruidDataSource
+        driver-class-name: com.mysql.jdbc.Driver
+        default-transaction-isolation: 2
+        maxActive: 100
+        initialSize: 1
+        maxWait: 60000
+        minIdle: 3
+        maxIdle: 5
+        timeBetweenEvictionRunsMillis: 60000
+        minEvictableIdleTimeMillis: 300000
+        validationQuery: select 1
+        testWhileIdle: true
+        testOnBorrow: false
+        testOnReturn: false
+        poolPreparedStatements: true
+        maxOpenPreparedStatements: 20
+        showSql: true
+    mvc:
+        view:
+            prefix: /WEB-INF/views/
+            suffix: .jsp
+---
+mybatis:
+  mapperLocations:  classpath:mapper/**/*Mapper.xml
+  typeAliasesPackage: erp.chain.domain
+  configLocation: classpath:mybatis-config.xml
+  checkConfigLocation: true
